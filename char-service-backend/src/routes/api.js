@@ -1,14 +1,19 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
+const redisClient = require('../redis');
 
-// Get available symbols
 router.get('/symbols', async (req, res) => {
   try {
+    const cachedSymbols = await redisClient.get('symbols');
+    if (cachedSymbols) {
+      return res.json(JSON.parse(cachedSymbols));
+    }
+
     const response = await axios.get('https://api.binance.com/api/v3/exchangeInfo');
     const symbols = response.data.symbols
       .filter(s => s.status === 'TRADING' && s.symbol.endsWith('USDT'))
-      .slice(0, 50) // Top 50 symbols
+      .slice(0, 50)
       .map(s => ({
         ticker: s.symbol,
         name: s.baseAsset,
@@ -17,7 +22,8 @@ router.get('/symbols', async (req, res) => {
         priceCurrency: s.quoteAsset,
         type: 'crypto'
       }));
-    
+
+    await redisClient.setEx('symbols', 3600, JSON.stringify(symbols));
     res.json(symbols);
   } catch (error) {
     console.error('Error fetching symbols:', error);
@@ -25,16 +31,20 @@ router.get('/symbols', async (req, res) => {
   }
 });
 
-// Get historical data
 router.get('/history/:symbol', async (req, res) => {
   try {
     const { symbol } = req.params;
     const { interval = '1m', limit = 1000 } = req.query;
-    
+    const cacheKey = `kline:${symbol}:${interval}`;
+
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return res.json(JSON.parse(cachedData));
+    }
+
     const response = await axios.get('https://api.binance.com/api/v3/klines', {
       params: { symbol, interval, limit }
     });
-    
     const data = response.data.map(kline => ({
       timestamp: kline[0],
       open: parseFloat(kline[1]),
@@ -43,7 +53,8 @@ router.get('/history/:symbol', async (req, res) => {
       close: parseFloat(kline[4]),
       volume: parseFloat(kline[5])
     }));
-    
+
+    await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
     res.json(data);
   } catch (error) {
     console.error('Error fetching historical data:', error);

@@ -18,17 +18,14 @@ class WebSocketManager {
     this.io.on('connection', (socket) => {
       console.log(`Client connected: ${socket.id}`);
 
-      // Subscribe to symbol
       socket.on('subscribe', async (data) => {
         const { symbol, interval } = data;
         console.log(`Subscribe request: ${symbol} ${interval} from ${socket.id}`);
 
         try {
-          // Gửi dữ liệu lịch sử trước
           const historicalData = await this.binanceService.getHistoricalData(symbol, interval);
           socket.emit('historical_data', { symbol, data: historicalData });
 
-          // Đăng ký nhận data realtime
           this.binanceService.subscribe(
             socket.id, 
             symbol, 
@@ -48,14 +45,12 @@ class WebSocketManager {
         }
       });
 
-      // Unsubscribe from symbol
       socket.on('unsubscribe', (data) => {
         const { symbol, interval } = data;
         this.binanceService.unsubscribe(socket.id, symbol, interval);
         socket.emit('unsubscribed', { symbol, interval });
       });
 
-      // Handle disconnect
       socket.on('disconnect', () => {
         console.log(`Client disconnected: ${socket.id}`);
         this.binanceService.cleanupClient(socket.id);
