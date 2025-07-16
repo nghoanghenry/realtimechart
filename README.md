@@ -176,16 +176,4 @@ Binance WebSocket → Redis Cache → Multiple Client Connections
 - [Binance WebSocket API](https://binance-docs.github.io/apidocs/spot/en/#websocket-market-streams)
 - [Microservices Architecture Patterns](https://microservices.io/)
 
-## Tác giả / Author
-
-**Nguyễn Hoàng Henry**
-- GitHub: [@nghoanghenry](https://github.com/nghoanghenry)
-- Project: [realtimechart](https://github.com/nghoanghenry/realtimechart)
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
 *Đồ án cuối kỳ môn Kiến trúc Phần mềm - Software Architecture Final Project*
