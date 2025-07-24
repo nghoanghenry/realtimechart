@@ -11,13 +11,71 @@ interface KLineData {
   volume?: number;
 }
 
+interface SymbolOption {
+  symbol: string;
+  name: string;
+  category: string;
+}
+
+interface TimeFrame {
+  interval: string;
+  label: string;
+  icon: string;
+}
+
 interface BacktestConfig {
+  // Source
+  symbol: string;
+  interval: string;
+  
+  // Time Range  
+  fromDate: string;
+  toDate: string;
+  
+  // Strategy
+  lots: number;
+  stopLoss: number;  // %
+  takeProfit: number; // %
+  
+  // Legacy fields for compatibility
   ma20Period: number;
   ma100Period: number;
   stopLossPercent: number;
   takeProfitPercent: number;
   initialCapital: number;
 }
+
+// Time frames với icons
+const TIME_FRAMES: TimeFrame[] = [
+  { interval: '5m', label: '5 Minutes', icon: '⚡' },
+  { interval: '4h', label: '4 Hours', icon: '📈' },
+  { interval: '1d', label: 'Daily', icon: '📅' },
+  { interval: '1w', label: 'Weekly', icon: '🗓️' }
+];
+
+// Popular crypto symbols với tên và category
+const POPULAR_SYMBOLS: SymbolOption[] = [
+  { symbol: 'BTCUSDT', name: 'Bitcoin', category: 'Major' },
+  { symbol: 'ETHUSDT', name: 'Ethereum', category: 'Major' },
+  { symbol: 'BNBUSDT', name: 'BNB', category: 'Major' },
+  { symbol: 'ADAUSDT', name: 'Cardano', category: 'Major' },
+  { symbol: 'SOLUSDT', name: 'Solana', category: 'Major' },
+  { symbol: 'XRPUSDT', name: 'Ripple', category: 'Major' },
+  { symbol: 'DOTUSDT', name: 'Polkadot', category: 'Major' },
+  { symbol: 'DOGEUSDT', name: 'Dogecoin', category: 'Meme' },
+  { symbol: 'SHIBUSDT', name: 'Shiba Inu', category: 'Meme' },
+  { symbol: 'AVAXUSDT', name: 'Avalanche', category: 'Layer 1' },
+  { symbol: 'MATICUSDT', name: 'Polygon', category: 'Layer 2' },
+  { symbol: 'LINKUSDT', name: 'Chainlink', category: 'Oracle' },
+  { symbol: 'UNIUSDT', name: 'Uniswap', category: 'DeFi' },
+  { symbol: 'LTCUSDT', name: 'Litecoin', category: 'Payment' },
+  { symbol: 'BCHUSDT', name: 'Bitcoin Cash', category: 'Payment' },
+  { symbol: 'ATOMUSDT', name: 'Cosmos', category: 'Layer 1' },
+  { symbol: 'FILUSDT', name: 'Filecoin', category: 'Storage' },
+  { symbol: 'TRXUSDT', name: 'TRON', category: 'Layer 1' },
+  { symbol: 'ETCUSDT', name: 'Ethereum Classic', category: 'Layer 1' },
+  { symbol: 'XLMUSDT', name: 'Stellar', category: 'Payment' }
+];
 
 interface Trade {
   id: number;
@@ -41,6 +99,210 @@ interface BacktestResult {
   sharpeRatio: number;
 }
 
+interface StrategyCondition {
+  id: string;
+  indicator1: string;
+  comparison: string;
+  indicator2: string;
+  param1: number;
+  param2: number;
+  logicOperator?: 'AND' | 'OR'; // For multiple conditions
+}
+
+interface StrategyTemplate {
+  name: string;
+  description: string;
+  icon: string;
+  conditions: Omit<StrategyCondition, 'id'>[];
+  defaultParams: {
+    stopLoss: number;
+    takeProfit: number;
+    lots: number;
+  };
+}
+
+// Predefined Strategy Templates
+const STRATEGY_TEMPLATES: StrategyTemplate[] = [
+  {
+    name: 'MovingAvg Cross',
+    description: 'MA fast crosses above MA slow',
+    icon: '📈',
+    conditions: [
+      {
+        indicator1: 'SMA',
+        comparison: 'Cross Above',
+        indicator2: 'SMA',
+        param1: 20,
+        param2: 50
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 4, lots: 10000 }
+  },
+  {
+    name: 'MovingAvg2Line Cross',
+    description: 'Double MA crossover strategy',
+    icon: '📊',
+    conditions: [
+      {
+        indicator1: 'SMA',
+        comparison: 'Cross Above',
+        indicator2: 'EMA',
+        param1: 21,
+        param2: 50
+      }
+    ],
+    defaultParams: { stopLoss: 1.5, takeProfit: 3, lots: 10000 }
+  },
+  {
+    name: 'Bollinger Bands Strategy',
+    description: 'Price touches lower band then reverses',
+    icon: '🎯',
+    conditions: [
+      {
+        indicator1: 'Price',
+        comparison: 'Cross Above',
+        indicator2: 'BB_Lower',
+        param1: 20,
+        param2: 2
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 4, lots: 10000 }
+  },
+  {
+    name: 'MACD Strategy',
+    description: 'MACD line crosses above signal line',
+    icon: '⚡',
+    conditions: [
+      {
+        indicator1: 'MACD',
+        comparison: 'Cross Above',
+        indicator2: 'MACD_Signal',
+        param1: 12,
+        param2: 26
+      }
+    ],
+    defaultParams: { stopLoss: 2.5, takeProfit: 5, lots: 10000 }
+  },
+  {
+    name: 'RSI Oversold Strategy',
+    description: 'RSI below 30 then crosses above',
+    icon: '🔄',
+    conditions: [
+      {
+        indicator1: 'RSI',
+        comparison: 'Cross Above',
+        indicator2: 'Value',
+        param1: 14,
+        param2: 30
+      }
+    ],
+    defaultParams: { stopLoss: 3, takeProfit: 6, lots: 10000 }
+  },
+  {
+    name: 'Momentum Strategy',
+    description: 'Price momentum above threshold',
+    icon: '🚀',
+    conditions: [
+      {
+        indicator1: 'Momentum',
+        comparison: 'Above',
+        indicator2: 'Value',
+        param1: 10,
+        param2: 0
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 4, lots: 10000 }
+  },
+  {
+    name: 'ChannelBreakOut Strategy',
+    description: 'Price breaks above resistance channel',
+    icon: '📈',
+    conditions: [
+      {
+        indicator1: 'Price',
+        comparison: 'Above',
+        indicator2: 'Channel_High',
+        param1: 20,
+        param2: 0
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 5, lots: 10000 }
+  },
+  {
+    name: 'Keltner Channels Strategy',
+    description: 'Price breaks out of Keltner channels',
+    icon: '📊',
+    conditions: [
+      {
+        indicator1: 'Price',
+        comparison: 'Above',
+        indicator2: 'Keltner_Upper',
+        param1: 20,
+        param2: 1.5
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 4, lots: 10000 }
+  },
+  {
+    name: 'Consecutive Up/Down Strategy',
+    description: 'Multiple consecutive bullish candles',
+    icon: '📈',
+    conditions: [
+      {
+        indicator1: 'Consecutive_Up',
+        comparison: 'Above',
+        indicator2: 'Value',
+        param1: 3,
+        param2: 0
+      }
+    ],
+    defaultParams: { stopLoss: 1.5, takeProfit: 3, lots: 10000 }
+  },
+  {
+    name: 'InSide Bar Strategy',
+    description: 'Inside bar pattern breakout',
+    icon: '📊',
+    conditions: [
+      {
+        indicator1: 'Inside_Bar',
+        comparison: 'Above',
+        indicator2: 'Value',
+        param1: 1,
+        param2: 0
+      }
+    ],
+    defaultParams: { stopLoss: 2, takeProfit: 4, lots: 10000 }
+  },
+  {
+    name: 'Greedy Strategy',
+    description: 'High risk high reward strategy',
+    icon: '💰',
+    conditions: [
+      {
+        indicator1: 'SMA',
+        comparison: 'Cross Above',
+        indicator2: 'SMA',
+        param1: 5,
+        param2: 10
+      }
+    ],
+    defaultParams: { stopLoss: 5, takeProfit: 10, lots: 20000 }
+  }
+];
+
+// Available indicators
+const INDICATORS = [
+  'SMA', 'EMA', 'Price', 'RSI', 'MACD', 'MACD_Signal', 
+  'BB_Upper', 'BB_Lower', 'BB_Middle', 'Keltner_Upper', 'Keltner_Lower',
+  'Channel_High', 'Channel_Low', 'Momentum', 'Consecutive_Up', 'Consecutive_Down',
+  'Inside_Bar', 'Outside_Bar', 'Value'
+];
+
+const COMPARISONS = [
+  'Above', 'Below', 'Cross Above', 'Cross Below', 
+  'Equal', 'Greater Than', 'Less Than'
+];
+
 // Define MA Line Overlay for v9.8.0
 const maLineOverlay = {
   name: 'maLine',
@@ -48,7 +310,7 @@ const maLineOverlay = {
   needDefaultPointFigure: false,
   needDefaultXAxisFigure: false,
   needDefaultYAxisFigure: false,
-  createPointFigures: ({ coordinates, overlay, precision }: any) => {
+  createPointFigures: ({ coordinates, overlay }: any) => {
     if (coordinates.length < 2) return [];
     
     const figures = [];
@@ -174,27 +436,43 @@ const sellArrowOverlay = {
   }
 };
 
-interface BacktestChartProps {
-  symbol?: string;
-  width?: string;
-  height?: string;
-}
-
-export default function BacktestChart({
-  symbol = 'BTCUSDT',
-  width = '100%',
-  height = '600px',
-}: BacktestChartProps) {
+export default function BacktestChart() {
   const chartRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const syncIntervalRef = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [historicalData, setHistoricalData] = useState<KLineData[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<StrategyTemplate | null>(null);
+  const [conditions, setConditions] = useState<StrategyCondition[]>([
+    {
+      id: '1',
+      indicator1: 'SMA',
+      comparison: 'Cross Above',
+      indicator2: 'SMA',
+      param1: 20,
+      param2: 50
+    }
+  ]);
   
   // Backtest configuration
   const [config, setConfig] = useState<BacktestConfig>({
+    // Source
+    symbol: 'BTCUSDT',
+    interval: '1d',
+    
+    // Time Range
+    fromDate: '2023-01-29T12:00',
+    toDate: '2023-03-12T04:00',
+    
+    // Strategy
+    lots: 1000000,
+    stopLoss: 1,
+    takeProfit: 2,
+    
+    // Legacy fields for compatibility
     ma20Period: 20,
     ma100Period: 100,
     stopLossPercent: 10,
@@ -230,11 +508,34 @@ export default function BacktestChart({
       // Apply data immediately after chart creation
       chartRef.current.applyNewData(historicalData);
       console.log('✅ Initialized backtest chart with data');
+      
+      // Create indicators based on strategy conditions
+      if (usesMACD()) {
+        chartRef.current.createIndicator('MACD', false, { id: 'MACD_PANE' });
+        console.log('✅ Created MACD indicator');
+      }
+      
+      if (usesRSI()) {
+        chartRef.current.createIndicator('RSI', false, { id: 'RSI_PANE' });
+        console.log('✅ Created RSI indicator');
+      }
+      
+      // Setup synchronization after chart is ready
+      setTimeout(() => {
+        syncChartsZoom();
+      }, 100);
+      
     } catch (err) {
       console.error('❌ Chart initialization error:', err);
     }
 
     return () => {
+      // Clear sync interval
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+      
       if (containerRef.current) {
         dispose('backtest-chart-container');
         containerRef.current.innerHTML = '';
@@ -257,11 +558,170 @@ export default function BacktestChart({
     return ma;
   };
 
+  // Calculate EMA
+  const calculateEMA = (data: KLineData[], period: number): number[] => {
+    const ema: number[] = [];
+    const multiplier = 2 / (period + 1);
+    
+    for (let i = 0; i < data.length; i++) {
+      if (i === 0) {
+        ema.push(data[i].close);
+      } else if (i < period - 1) {
+        ema.push(NaN);
+      } else if (i === period - 1) {
+        // Use SMA for the first EMA value
+        const sma = data.slice(0, period).reduce((sum, candle) => sum + candle.close, 0) / period;
+        ema.push(sma);
+      } else {
+        const prevEMA = ema[i - 1];
+        ema.push((data[i].close - prevEMA) * multiplier + prevEMA);
+      }
+    }
+    
+    return ema;
+  };
+
+  // Helper function to calculate EMA from values array
+  const calculateEMAFromValues = (values: number[], period: number): number[] => {
+    const ema: number[] = [];
+    const multiplier = 2 / (period + 1);
+    
+    for (let i = 0; i < values.length; i++) {
+      if (isNaN(values[i])) {
+        ema.push(NaN);
+        continue;
+      }
+      
+      if (i === 0 || ema.filter(v => !isNaN(v)).length === 0) {
+        ema.push(values[i]);
+      } else {
+        const prevEMA = ema.slice(0, i).filter(v => !isNaN(v)).pop() || values[i];
+        ema.push((values[i] - prevEMA) * multiplier + prevEMA);
+      }
+    }
+    
+    return ema;
+  };
+
+  // Calculate RSI
+  const calculateRSI = (data: KLineData[], period: number = 14): number[] => {
+    const rsi: number[] = [];
+    let gains: number[] = [];
+    let losses: number[] = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      if (i === 0) {
+        rsi.push(NaN);
+        gains.push(0);
+        losses.push(0);
+        continue;
+      }
+      
+      const change = data[i].close - data[i - 1].close;
+      const gain = change > 0 ? change : 0;
+      const loss = change < 0 ? Math.abs(change) : 0;
+      
+      gains.push(gain);
+      losses.push(loss);
+      
+      if (i < period) {
+        rsi.push(NaN);
+        continue;
+      }
+      
+      // Calculate average gain and loss
+      const avgGain = gains.slice(i - period + 1, i + 1).reduce((a, b) => a + b) / period;
+      const avgLoss = losses.slice(i - period + 1, i + 1).reduce((a, b) => a + b) / period;
+      
+      if (avgLoss === 0) {
+        rsi.push(100);
+      } else {
+        const rs = avgGain / avgLoss;
+        rsi.push(100 - (100 / (1 + rs)));
+      }
+    }
+    
+    return rsi;
+  };
+
+  // Calculate MACD
+  const calculateMACD = (data: KLineData[], fastPeriod: number = 12, slowPeriod: number = 26, signalPeriod: number = 9) => {
+    const ema12 = calculateEMA(data, fastPeriod);
+    const ema26 = calculateEMA(data, slowPeriod);
+    
+    const macdLine: number[] = [];
+    const signalLine: number[] = [];
+    const histogram: number[] = [];
+    
+    // Calculate MACD line
+    for (let i = 0; i < data.length; i++) {
+      if (isNaN(ema12[i]) || isNaN(ema26[i])) {
+        macdLine.push(NaN);
+      } else {
+        macdLine.push(ema12[i] - ema26[i]);
+      }
+    }
+    
+    // Calculate signal line (EMA of MACD line)
+    signalLine.push(...calculateEMAFromValues(macdLine, signalPeriod));
+    
+    // Calculate histogram
+    for (let i = 0; i < data.length; i++) {
+      if (isNaN(macdLine[i]) || isNaN(signalLine[i])) {
+        histogram.push(NaN);
+      } else {
+        histogram.push(macdLine[i] - signalLine[i]);
+      }
+    }
+    
+    return { macdLine, signalLine, histogram };
+  };
+
+  // Calculate Bollinger Bands
+  const calculateBollingerBands = (data: KLineData[], period: number = 20, stdDev: number = 2) => {
+    const sma = calculateMA(data, period);
+    const upper: number[] = [];
+    const lower: number[] = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+        upper.push(NaN);
+        lower.push(NaN);
+        continue;
+      }
+      
+      const slice = data.slice(i - period + 1, i + 1);
+      const mean = sma[i];
+      const variance = slice.reduce((sum, candle) => sum + Math.pow(candle.close - mean, 2), 0) / period;
+      const standardDeviation = Math.sqrt(variance);
+      
+      upper.push(mean + (standardDeviation * stdDev));
+      lower.push(mean - (standardDeviation * stdDev));
+    }
+    
+    return { upper, middle: sma, lower };
+  };
+
+  // Calculate Momentum
+  const calculateMomentum = (data: KLineData[], period: number = 10): number[] => {
+    const momentum: number[] = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      if (i < period) {
+        momentum.push(NaN);
+      } else {
+        momentum.push(data[i].close - data[i - period].close);
+      }
+    }
+    
+    return momentum;
+  };
+
   // Load historical data
   const loadHistoricalData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/history/${symbol}?interval=1d&limit=500`);
+      const response = await fetch(`http://localhost:3001/api/history/${config.symbol}?interval=${config.interval}&limit=500`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
       const data: KLineData[] = await response.json();
@@ -307,6 +767,285 @@ export default function BacktestChart({
     return data;
   };
 
+  // Strategy Template Functions
+  const applyTemplate = (template: StrategyTemplate) => {
+    setSelectedTemplate(template);
+    
+    // Apply template conditions
+    const newConditions: StrategyCondition[] = template.conditions.map((condition, index) => ({
+      ...condition,
+      id: Date.now().toString() + index
+    }));
+    setConditions(newConditions);
+    
+    // Apply template default parameters
+    setConfig(prev => ({
+      ...prev,
+      lots: template.defaultParams.lots,
+      stopLoss: template.defaultParams.stopLoss,
+      takeProfit: template.defaultParams.takeProfit
+    }));
+  };
+
+  // Add new condition
+  const addCondition = () => {
+    const newCondition: StrategyCondition = {
+      id: Date.now().toString(),
+      indicator1: 'SMA',
+      comparison: 'Above',
+      indicator2: 'SMA',
+      param1: 20,
+      param2: 50
+    };
+    
+    setConditions(prev => [...prev, newCondition]);
+  };
+
+  // Remove condition
+  const removeCondition = (id: string) => {
+    setConditions(prev => prev.filter(c => c.id !== id));
+  };
+
+  // Update condition
+  const updateCondition = (id: string, updates: Partial<StrategyCondition>) => {
+    setConditions(prev => prev.map(c => 
+      c.id === id ? { ...c, ...updates } : c
+    ));
+  };
+
+  // Reset to custom strategy
+  const resetToCustom = () => {
+    setSelectedTemplate(null);
+    setConditions([{
+      id: '1',
+      indicator1: 'SMA',
+      comparison: 'Cross Above',
+      indicator2: 'SMA',
+      param1: 20,
+      param2: 50
+    }]);
+  };
+
+  // Check if strategy uses specific indicators
+  const usesMACD = () => {
+    return conditions.some(c => 
+      c.indicator1.includes('MACD') || c.indicator2.includes('MACD')
+    );
+  };
+
+  const usesRSI = () => {
+    return conditions.some(c => 
+      c.indicator1 === 'RSI' || c.indicator2 === 'RSI'
+    );
+  };
+
+  // Initialize subcharts - Simplified approach using built-in indicators
+  const initializeSubcharts = () => {
+    if (!chartRef.current) return;
+    
+    try {
+      // Remove existing indicators first
+      chartRef.current.removeIndicator('MACD_PANE');
+      chartRef.current.removeIndicator('RSI_PANE');
+      
+      // Add indicators based on strategy conditions
+      if (usesMACD()) {
+        chartRef.current.createIndicator('MACD', false, { id: 'MACD_PANE' });
+        console.log('✅ Added MACD indicator pane');
+      }
+      
+      if (usesRSI()) {
+        chartRef.current.createIndicator('RSI', false, { id: 'RSI_PANE' });
+        console.log('✅ Added RSI indicator pane');
+      }
+    } catch (err) {
+      console.error('❌ Error initializing subcharts:', err);
+    }
+  };
+
+  // Synchronize zoom and pan between charts - Simplified for single chart
+  const syncChartsZoom = () => {
+    // Since we're using built-in indicators, they automatically sync with main chart
+    console.log('✅ Using built-in indicator synchronization');
+  };
+
+  // Update subcharts with data - Simplified for built-in indicators
+  const updateSubcharts = (_macdData: any, _rsiData: number[]) => {
+    // Built-in indicators automatically update with the main chart data
+    // No manual data application needed - indicators calculate internally
+    console.log('✅ Built-in indicators auto-updating with chart data');
+    
+    if (usesMACD()) {
+      console.log('📊 MACD indicator active');
+    }
+    
+    if (usesRSI()) {
+      console.log('📊 RSI indicator active');
+    }
+  };
+
+  // Evaluate strategy conditions
+  const evaluateConditions = (
+    candle: KLineData, 
+    prevCandle: KLineData | null,
+    indicators: { [key: string]: number[] },
+    index: number
+  ): { shouldBuy: boolean; shouldSell: boolean; reason: string } => {
+    let shouldBuy = false;
+    let shouldSell = false;
+    let reason = '';
+
+    for (const condition of conditions) {
+      const { indicator1, comparison, indicator2, param1, param2 } = condition;
+      
+      let value1 = 0;
+      let value2 = 0;
+      let prevValue1 = 0;
+      let prevValue2 = 0;
+
+      // Get indicator1 values
+      switch (indicator1) {
+        case 'Price':
+          value1 = candle.close;
+          prevValue1 = prevCandle?.close || candle.close;
+          break;
+        case 'SMA':
+          value1 = indicators.sma?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.sma?.[index - 1] || 0) : value1;
+          break;
+        case 'EMA':
+          value1 = indicators.ema?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.ema?.[index - 1] || 0) : value1;
+          break;
+        case 'RSI':
+          value1 = indicators.rsi?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.rsi?.[index - 1] || 0) : value1;
+          break;
+        case 'MACD':
+          value1 = indicators.macd?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.macd?.[index - 1] || 0) : value1;
+          break;
+        case 'MACD_Signal':
+          value1 = indicators.macd_signal?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.macd_signal?.[index - 1] || 0) : value1;
+          break;
+        case 'BB_Upper':
+          value1 = indicators.bb_upper?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.bb_upper?.[index - 1] || 0) : value1;
+          break;
+        case 'BB_Lower':
+          value1 = indicators.bb_lower?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.bb_lower?.[index - 1] || 0) : value1;
+          break;
+        case 'BB_Middle':
+          value1 = indicators.bb_middle?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.bb_middle?.[index - 1] || 0) : value1;
+          break;
+        case 'Momentum':
+          value1 = indicators.momentum?.[index] || 0;
+          prevValue1 = index > 0 ? (indicators.momentum?.[index - 1] || 0) : value1;
+          break;
+        default:
+          value1 = 0;
+          prevValue1 = 0;
+      }
+
+      // Get indicator2 values
+      switch (indicator2) {
+        case 'Price':
+          value2 = candle.close;
+          prevValue2 = prevCandle?.close || candle.close;
+          break;
+        case 'SMA':
+          value2 = indicators.sma2?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.sma2?.[index - 1] || 0) : value2;
+          break;
+        case 'EMA':
+          value2 = indicators.ema?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.ema?.[index - 1] || 0) : value2;
+          break;
+        case 'RSI':
+          value2 = indicators.rsi?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.rsi?.[index - 1] || 0) : value2;
+          break;
+        case 'MACD_Signal':
+          value2 = indicators.macd_signal?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.macd_signal?.[index - 1] || 0) : value2;
+          break;
+        case 'BB_Upper':
+          value2 = indicators.bb_upper?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.bb_upper?.[index - 1] || 0) : value2;
+          break;
+        case 'BB_Lower':
+          value2 = indicators.bb_lower?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.bb_lower?.[index - 1] || 0) : value2;
+          break;
+        case 'BB_Middle':
+          value2 = indicators.bb_middle?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.bb_middle?.[index - 1] || 0) : value2;
+          break;
+        case 'Momentum':
+          value2 = indicators.momentum?.[index] || 0;
+          prevValue2 = index > 0 ? (indicators.momentum?.[index - 1] || 0) : value2;
+          break;
+        case 'Value':
+          value2 = param2;
+          prevValue2 = param2;
+          break;
+        default:
+          value2 = param2;
+          prevValue2 = param2;
+      }
+
+      // Skip if values are invalid
+      if (isNaN(value1) || isNaN(value2) || isNaN(prevValue1) || isNaN(prevValue2)) {
+        continue;
+      }
+
+      // Evaluate condition
+      let conditionMet = false;
+      
+      switch (comparison) {
+        case 'Above':
+          conditionMet = value1 > value2;
+          break;
+        case 'Below':
+          conditionMet = value1 < value2;
+          break;
+        case 'Cross Above':
+          conditionMet = prevValue1 <= prevValue2 && value1 > value2;
+          break;
+        case 'Cross Below':
+          conditionMet = prevValue1 >= prevValue2 && value1 < value2;
+          break;
+        case 'Equal':
+          conditionMet = Math.abs(value1 - value2) < 0.0001;
+          break;
+        case 'Greater Than':
+          conditionMet = value1 > value2;
+          break;
+        case 'Less Than':
+          conditionMet = value1 < value2;
+          break;
+        default:
+          conditionMet = false;
+      }
+
+      if (conditionMet) {
+        if (comparison.includes('Above') || comparison.includes('Cross Above') || comparison.includes('Greater')) {
+          shouldBuy = true;
+          reason = `${indicator1}(${param1}) ${comparison} ${indicator2}(${param2})`;
+        } else {
+          shouldSell = true;
+          reason = `${indicator1}(${param1}) ${comparison} ${indicator2}(${param2})`;
+        }
+        break; // Use first matching condition
+      }
+    }
+
+    return { shouldBuy, shouldSell, reason };
+  };
+
   // Run backtest
   const runBacktest = () => {
     if (historicalData.length === 0) return;
@@ -314,13 +1053,39 @@ export default function BacktestChart({
     setIsRunning(true);
     setTrades([]);
     
+    // Initialize subcharts first
+    initializeSubcharts();
+    
     const ma20 = calculateMA(historicalData, config.ma20Period);
     const ma100 = calculateMA(historicalData, config.ma100Period);
+    
+    // Calculate all indicators for strategy conditions
+    const ema21 = calculateEMA(historicalData, 21);
+    const rsi = calculateRSI(historicalData, 14);
+    const macd = calculateMACD(historicalData, 12, 26, 9);
+    const bb = calculateBollingerBands(historicalData, 20, 2);
+    const momentum = calculateMomentum(historicalData, 10);
+
+    // Update subcharts with indicator data
+    updateSubcharts(macd, rsi);
+
+    const indicators: { [key: string]: number[] } = {
+      sma: ma20,    // Using ma20 as default SMA
+      sma2: ma100,  // Using ma100 as second SMA
+      ema: ema21,
+      rsi: rsi,
+      macd: macd.macdLine,
+      macd_signal: macd.signalLine,
+      bb_upper: bb.upper,
+      bb_middle: bb.middle,
+      bb_lower: bb.lower,
+      momentum: momentum,
+      price: historicalData.map(d => d.close)
+    };
     
     const newTrades: Trade[] = [];
     let position: 'none' | 'long' = 'none';
     let entryPrice = 0;
-    let entryIndex = 0;
     let capital = config.initialCapital;
     let quantity = 0;
     let tradeId = 0;
@@ -360,7 +1125,9 @@ export default function BacktestChart({
     // Backtest logic
     for (let i = config.ma100Period; i < historicalData.length; i++) {
       const currentCandle = historicalData[i];
-      const prevCandle = historicalData[i - 1];
+      
+      // Get previous candle for condition evaluation
+      const prevCandle = i > 0 ? historicalData[i - 1] : null;
       
       const currentMA20 = ma20[i];
       const currentMA100 = ma100[i];
@@ -370,11 +1137,18 @@ export default function BacktestChart({
       if (isNaN(currentMA20) || isNaN(currentMA100) || isNaN(prevMA20) || isNaN(prevMA100)) {
         continue;
       }
+
+      // Evaluate strategy conditions
+      const { shouldBuy, shouldSell, reason } = evaluateConditions(
+        currentCandle, 
+        prevCandle, 
+        indicators, 
+        i
+      );
       
-      // Buy signal: MA20 crosses above MA100
-      if (position === 'none' && prevMA20 <= prevMA100 && currentMA20 > currentMA100) {
+      // Buy signal from strategy conditions
+      if (position === 'none' && shouldBuy) {
         entryPrice = currentCandle.close;
-        entryIndex = i;
         quantity = capital / entryPrice;
         position = 'long';
         
@@ -384,7 +1158,7 @@ export default function BacktestChart({
           timestamp: currentCandle.timestamp,
           price: entryPrice,
           quantity,
-          reason: 'MA20 cross above MA100'
+          reason: reason || 'Strategy condition met'
         };
         
         newTrades.push(trade);
@@ -405,29 +1179,35 @@ export default function BacktestChart({
       // Sell signals
       if (position === 'long') {
         let sellReason = '';
-        let shouldSell = false;
+        let shouldSellPosition = false;
+        
+        // Strategy sell signal
+        if (shouldSell) {
+          sellReason = reason || 'Strategy sell condition met';
+          shouldSellPosition = true;
+        }
         
         // Stop loss
-        const stopLossPrice = entryPrice * (1 - config.stopLossPercent / 100);
+        const stopLossPrice = entryPrice * (1 - config.stopLoss / 100);
         if (currentCandle.low <= stopLossPrice) {
-          sellReason = `Stop Loss (${config.stopLossPercent}%)`;
-          shouldSell = true;
+          sellReason = `Stop Loss (${config.stopLoss}%)`;
+          shouldSellPosition = true;
         }
         
         // Take profit
-        const takeProfitPrice = entryPrice * (1 + config.takeProfitPercent / 100);
+        const takeProfitPrice = entryPrice * (1 + config.takeProfit / 100);
         if (currentCandle.high >= takeProfitPrice) {
-          sellReason = `Take Profit (${config.takeProfitPercent}%)`;
-          shouldSell = true;
+          sellReason = `Take Profit (${config.takeProfit}%)`;
+          shouldSellPosition = true;
         }
         
         // MA signal exit: MA20 crosses below MA100
         if (prevMA20 >= prevMA100 && currentMA20 < currentMA100) {
           sellReason = 'MA20 cross below MA100';
-          shouldSell = true;
+          shouldSellPosition = true;
         }
         
-        if (shouldSell) {
+        if (shouldSellPosition) {
           const sellPrice = sellReason.includes('Stop Loss') ? stopLossPrice :
                            sellReason.includes('Take Profit') ? takeProfitPrice :
                            currentCandle.close;
@@ -492,51 +1272,160 @@ export default function BacktestChart({
     console.log(`✅ Backtest completed: ${sellTrades.length} trades, PnL: ${totalPnL.toFixed(2)}`);
   };
 
-  // Load data on component mount
+  // Load data on component mount and when symbol/interval changes
   useEffect(() => {
     loadHistoricalData();
-  }, [symbol]);
+  }, [config.symbol, config.interval]);
 
   return (
     <div style={{ 
       display: 'flex', 
+      flexDirection: 'column',
       gap: '20px', 
       padding: '0', 
       fontFamily: 'Arial, sans-serif',
-      height: '100%',
-      minHeight: height
+      minHeight: '100vh'
     }}>
       {/* Chart Section */}
-      <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column'
+      }}>
         <div style={{ 
           background: 'white', 
           borderRadius: '8px', 
           padding: '20px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          flex: 1,
           display: 'flex',
           flexDirection: 'column'
         }}>
           <h2 style={{ margin: '0 0 20px 0', color: '#333', fontSize: '18px' }}>
-            Backtest Chart - {symbol}
+            Backtest Chart - {config.symbol} ({TIME_FRAMES.find(f => f.interval === config.interval)?.icon} {TIME_FRAMES.find(f => f.interval === config.interval)?.label})
           </h2>
           
           {/* Controls */}
           <div style={{ 
             display: 'flex', 
             gap: '15px', 
-            marginBottom: '20px',
+            marginBottom: '15px',
             flexWrap: 'wrap',
             alignItems: 'flex-end'
           }}>
+            {/* Symbol Selection */}
             <div>
               <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                MA20:
+                Symbol:
+              </label>
+              <select
+                value={config.symbol}
+                onChange={(e) => setConfig({...config, symbol: e.target.value})}
+                style={{
+                  padding: '6px 8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  width: '120px',
+                  fontSize: '12px'
+                }}
+              >
+                {POPULAR_SYMBOLS.map(option => (
+                  <option key={option.symbol} value={option.symbol}>
+                    {option.symbol} - {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Time Frame Selection */}
+            <div>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                Interval:
+              </label>
+              <select
+                value={config.interval}
+                onChange={(e) => setConfig({...config, interval: e.target.value})}
+                style={{
+                  padding: '6px 8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  width: '100px',
+                  fontSize: '12px'
+                }}
+              >
+                {TIME_FRAMES.map(frame => (
+                  <option key={frame.interval} value={frame.interval}>
+                    {frame.icon} {frame.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Time Range */}
+            <div>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                FROM:
+              </label>
+              <input
+                type="datetime-local"
+                value={config.fromDate}
+                onChange={(e) => setConfig({...config, fromDate: e.target.value})}
+                style={{
+                  padding: '6px 8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '12px'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                TO:
+              </label>
+              <input
+                type="datetime-local"
+                value={config.toDate}
+                onChange={(e) => setConfig({...config, toDate: e.target.value})}
+                style={{
+                  padding: '6px 8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '12px'
+                }}
+              />
+            </div>
+
+            {/* Strategy Parameters */}
+            <div>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                LOTS:
+              </label>
+              <input
+                type="text"
+                value={`$${config.lots.toLocaleString()}`}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[$,]/g, '');
+                  if (!isNaN(Number(value))) {
+                    setConfig({...config, lots: Number(value)});
+                  }
+                }}
+                style={{
+                  padding: '6px 8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  width: '80px',
+                  fontSize: '12px'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                SL (%):
               </label>
               <input
                 type="number"
-                value={config.ma20Period}
-                onChange={(e) => setConfig({...config, ma20Period: parseInt(e.target.value)})}
+                value={config.stopLoss}
+                onChange={(e) => setConfig({...config, stopLoss: parseFloat(e.target.value)})}
                 style={{
                   padding: '6px 8px',
                   border: '1px solid #ddd',
@@ -546,51 +1435,15 @@ export default function BacktestChart({
                 }}
               />
             </div>
-            
+
             <div>
               <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                MA100:
+                TP (%):
               </label>
               <input
                 type="number"
-                value={config.ma100Period}
-                onChange={(e) => setConfig({...config, ma100Period: parseInt(e.target.value)})}
-                style={{
-                  padding: '6px 8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  width: '50px',
-                  fontSize: '12px'
-                }}
-              />
-            </div>
-            
-            <div>
-              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Stop Loss %:
-              </label>
-              <input
-                type="number"
-                value={config.stopLossPercent}
-                onChange={(e) => setConfig({...config, stopLossPercent: parseFloat(e.target.value)})}
-                style={{
-                  padding: '6px 8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  width: '50px',
-                  fontSize: '12px'
-                }}
-              />
-            </div>
-            
-            <div>
-              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Take Profit %:
-              </label>
-              <input
-                type="number"
-                value={config.takeProfitPercent}
-                onChange={(e) => setConfig({...config, takeProfitPercent: parseFloat(e.target.value)})}
+                value={config.takeProfit}
+                onChange={(e) => setConfig({...config, takeProfit: parseFloat(e.target.value)})}
                 style={{
                   padding: '6px 8px',
                   border: '1px solid #ddd',
@@ -619,6 +1472,241 @@ export default function BacktestChart({
               />
             </div>
             
+            {/* Strategy Templates Section */}
+            <div style={{ width: '100%', marginTop: '10px' }}>
+              <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '8px' }}>
+                Strategy Templates:
+              </label>
+              
+              {/* Template Buttons */}
+              <div style={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: '6px',
+                marginBottom: '10px'
+              }}>
+                {STRATEGY_TEMPLATES.slice(0, 6).map((template) => (
+                  <button
+                    key={template.name}
+                    onClick={() => applyTemplate(template)}
+                    style={{
+                      padding: '4px 8px',
+                      backgroundColor: selectedTemplate?.name === template.name ? '#007bff' : '#f8f9fa',
+                      color: selectedTemplate?.name === template.name ? 'white' : '#666',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title={template.description}
+                  >
+                    <span>{template.icon}</span>
+                    <span>{template.name}</span>
+                  </button>
+                ))}
+                
+                <button
+                  onClick={resetToCustom}
+                  style={{
+                    padding: '4px 8px',
+                    backgroundColor: !selectedTemplate ? '#28a745' : '#f8f9fa',
+                    color: !selectedTemplate ? 'white' : '#666',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '10px'
+                  }}
+                >
+                  Custom
+                </button>
+              </div>
+
+              {/* Show more templates button */}
+              <details style={{ marginBottom: '10px' }}>
+                <summary style={{ 
+                  fontSize: '11px', 
+                  color: '#007bff', 
+                  cursor: 'pointer',
+                  marginBottom: '5px'
+                }}>
+                  More Templates ({STRATEGY_TEMPLATES.length - 6} more)
+                </summary>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '4px'
+                }}>
+                  {STRATEGY_TEMPLATES.slice(6).map((template) => (
+                    <button
+                      key={template.name}
+                      onClick={() => applyTemplate(template)}
+                      style={{
+                        padding: '3px 6px',
+                        backgroundColor: selectedTemplate?.name === template.name ? '#007bff' : '#f8f9fa',
+                        color: selectedTemplate?.name === template.name ? 'white' : '#666',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontSize: '9px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '2px'
+                      }}
+                      title={template.description}
+                    >
+                      <span>{template.icon}</span>
+                      <span>{template.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+
+              {/* Current Strategy Conditions */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  marginBottom: '8px'
+                }}>
+                  <label style={{ fontSize: '11px', color: '#666' }}>
+                    Strategy Conditions:
+                  </label>
+                  {selectedTemplate && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      color: '#007bff',
+                      backgroundColor: '#e3f2fd',
+                      padding: '2px 6px',
+                      borderRadius: '8px'
+                    }}>
+                      {selectedTemplate.icon} {selectedTemplate.name}
+                    </span>
+                  )}
+                </div>
+
+                {conditions.map((condition) => (
+                  <div key={condition.id} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px',
+                    marginBottom: '6px',
+                    fontSize: '10px'
+                  }}>
+                    <select
+                      value={condition.indicator1}
+                      onChange={(e) => updateCondition(condition.id, { indicator1: e.target.value })}
+                      style={{
+                        padding: '2px 4px',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        width: '60px'
+                      }}
+                    >
+                      {INDICATORS.map(ind => (
+                        <option key={ind} value={ind}>{ind}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={condition.comparison}
+                      onChange={(e) => updateCondition(condition.id, { comparison: e.target.value })}
+                      style={{
+                        padding: '2px 4px',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        width: '70px'
+                      }}
+                    >
+                      {COMPARISONS.map(comp => (
+                        <option key={comp} value={comp}>{comp}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={condition.indicator2}
+                      onChange={(e) => updateCondition(condition.id, { indicator2: e.target.value })}
+                      style={{
+                        padding: '2px 4px',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        width: '60px'
+                      }}
+                    >
+                      {INDICATORS.map(ind => (
+                        <option key={ind} value={ind}>{ind}</option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="number"
+                      value={condition.param1}
+                      onChange={(e) => updateCondition(condition.id, { param1: Number(e.target.value) })}
+                      style={{
+                        padding: '2px 4px',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        width: '35px'
+                      }}
+                    />
+
+                    <input
+                      type="number"
+                      value={condition.param2}
+                      onChange={(e) => updateCondition(condition.id, { param2: Number(e.target.value) })}
+                      style={{
+                        padding: '2px 4px',
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        width: '35px'
+                      }}
+                    />
+
+                    {conditions.length > 1 && (
+                      <button
+                        onClick={() => removeCondition(condition.id)}
+                        style={{
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          padding: '0 4px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                  <button
+                    onClick={addCondition}
+                    style={{
+                      padding: '4px 8px',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                      fontSize: '10px'
+                    }}
+                  >
+                    + Add Condition
+                  </button>
+                </div>
+              </div>
+            </div>
+            
             <button
               onClick={runBacktest}
               disabled={isRunning || isLoading}
@@ -633,63 +1721,77 @@ export default function BacktestChart({
                 fontWeight: 500
               }}
             >
-              {isRunning ? 'Running...' : 'Run Backtest'}
+              {isRunning ? 'Running...' : 'APPLY'}
             </button>
           </div>
           
-          {/* Chart Container */}
-          <div 
-            ref={containerRef}
-            id="backtest-chart-container"
-            style={{ 
-              width: '100%', 
-              flex: 1,
-              minHeight: '400px',
-              border: '1px solid #eee',
+          {/* Chart and Subcharts Container */}
+          <div style={{
+            height: `${450 + (usesMACD() ? 110 : 0) + (usesRSI() ? 110 : 0) + (usesMACD() && usesRSI() ? 10 : 0)}px`,
+            minHeight: `${450 + (usesMACD() ? 110 : 0) + (usesRSI() ? 110 : 0) + (usesMACD() && usesRSI() ? 10 : 0)}px`,
+            maxHeight: `${450 + (usesMACD() ? 110 : 0) + (usesRSI() ? 110 : 0) + (usesMACD() && usesRSI() ? 10 : 0)}px`,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Main Chart */}
+            <div style={{ 
+              height: '450px',
+              backgroundColor: 'white',
               borderRadius: '4px',
-              position: 'relative'
-            }} 
-          >
-            {/* Loading overlay */}
-            {(isLoading || historicalData.length === 0) && (
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                zIndex: 10,
-                borderRadius: '4px'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'center', 
-                  gap: '12px',
-                  color: '#666'
-                }}>
-                  {isLoading ? (
-                    <>
-                      <div style={{
-                        width: '24px',
-                        height: '24px',
-                        border: '3px solid #f3f3f3',
-                        borderTop: '3px solid #007bff',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite'
-                      }} />
-                      <div>Loading historical data...</div>
-                    </>
-                  ) : (
-                    <div>No data available. Click "Run Backtest" to start.</div>
-                  )}
-                </div>
+              border: '1px solid #e1e5e9',
+              overflow: 'hidden',
+              marginBottom: usesMACD() || usesRSI() ? '10px' : '0'
+            }}>
+              <div 
+                id="backtest-chart-container" 
+                ref={containerRef}
+                style={{ 
+                  width: '100%', 
+                  height: '100%'
+                }}
+              >
+                {/* Loading overlay */}
+                {(isLoading || historicalData.length === 0) && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    zIndex: 10,
+                    borderRadius: '4px'
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      alignItems: 'center', 
+                      gap: '12px',
+                      color: '#666'
+                    }}>
+                      {isLoading ? (
+                        <>
+                          <div style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '3px solid #f3f3f3',
+                            borderTop: '3px solid #007bff',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                          }} />
+                          <div>Loading historical data...</div>
+                        </>
+                      ) : (
+                        <div>No data available. Click "Run Backtest" to start.</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
           
           {/* Legend */}
@@ -699,7 +1801,8 @@ export default function BacktestChart({
             marginTop: '10px',
             fontSize: '12px',
             color: '#666',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexWrap: 'wrap'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ width: '20px', height: '2px', backgroundColor: '#ff6b35' }}></div>
@@ -709,6 +1812,34 @@ export default function BacktestChart({
               <div style={{ width: '20px', height: '2px', backgroundColor: '#1890ff' }}></div>
               <span>MA100</span>
             </div>
+            {usesMACD() && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: '#2196F3' }}></div>
+                  <span>MACD</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: '#FF5722' }}></div>
+                  <span>Signal</span>
+                </div>
+              </>
+            )}
+            {usesRSI() && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: '#FF9800' }}></div>
+                  <span>RSI</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: '#4CAF50', opacity: 0.7 }}></div>
+                  <span>RSI 30</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: '#F44336', opacity: 0.7 }}></div>
+                  <span>RSI 70</span>
+                </div>
+              </>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ width: '0', height: '0', borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '8px solid #26a69a' }}></div>
               <span>Buy</span>
@@ -721,11 +1852,17 @@ export default function BacktestChart({
         </div>
       </div>
       
-      {/* Results Section */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Results and Trade History Section */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '20px',
+        maxHeight: '300px',
+        minHeight: '250px'
+      }}>
         {/* Summary */}
         {backtestResult && (
           <div style={{ 
+            flex: 1,
             background: 'white', 
             borderRadius: '8px', 
             padding: '20px',
@@ -772,11 +1909,11 @@ export default function BacktestChart({
         
         {/* Trade History */}
         <div style={{ 
+          flex: 2,
           background: 'white', 
           borderRadius: '8px', 
           padding: '20px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          flex: 1,
           display: 'flex',
           flexDirection: 'column'
         }}>

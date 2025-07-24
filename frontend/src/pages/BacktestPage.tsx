@@ -11,10 +11,7 @@ export default function BacktestPage() {
         maxWidth: '1400px', 
         margin: '0 auto'
       }}>
-        <BacktestChart 
-          symbol="BTCUSDT"
-          height="600px"
-        />
+        <BacktestChart />
       </div>
     </div>
   );
