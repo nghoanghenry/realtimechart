@@ -26,7 +26,7 @@ class RSSFetcher:
         return articles
 
     @staticmethod
-    def fetch_html(url: str):
+    def fetch_html(url: str) -> str:
         try:
             headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
             response = requests.get(url, headers=headers, timeout=30)
