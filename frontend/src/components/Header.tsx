@@ -1,13 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const getActiveView = () => {
     if (location.pathname === '/') return 'single';
     if (location.pathname === '/multichart') return 'multichart';
     if (location.pathname === '/multitimeframechart') return 'multi';
     if (location.pathname === '/backtest') return 'backtest';
+    if (location.pathname === '/vip') return 'vip';
+    if (location.pathname === '/admin') return 'admin';
     return 'single';
   };
 
@@ -25,6 +29,10 @@ export default function Header() {
     transition: 'all 0.3s ease',
     display: 'inline-block'
   });
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header style={{
@@ -48,7 +56,7 @@ export default function Header() {
         </h1>
         
         {/* Navigation buttons */}
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Link
             to="/"
             style={navButtonStyle('single')}
@@ -124,6 +132,112 @@ export default function Header() {
           >
             🔬 Backtest
           </Link>
+
+          {/* VIP Upgrade Button - Special styling - Hide for admin */}
+          {user?.role !== 'admin' && (
+            <Link
+              to="/vip"
+              style={{
+                ...navButtonStyle('vip'),
+                background: activeView === 'vip' 
+                  ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' 
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                transform: activeView === 'vip' ? 'scale(1.05)' : 'scale(1)'
+              }}
+              onMouseOver={(e) => {
+                if (activeView !== 'vip') {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.6)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (activeView !== 'vip') {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+                }
+              }}
+            >
+              ⭐ {user?.role === 'vip' ? 'VIP Member' : 'Nâng cấp VIP'}
+            </Link>
+          )}
+
+          {/* Admin Button - Only show for admin users */}
+          {user?.role === 'admin' && (
+            <Link
+              to="/admin"
+              style={{
+                ...navButtonStyle('admin'),
+                background: activeView === 'admin' 
+                  ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' 
+                  : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                color: 'white',
+                border: 'none',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(240, 147, 251, 0.4)',
+                transform: activeView === 'admin' ? 'scale(1.05)' : 'scale(1)'
+              }}
+              onMouseOver={(e) => {
+                if (activeView !== 'admin') {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(240, 147, 251, 0.6)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (activeView !== 'admin') {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(240, 147, 251, 0.4)';
+                }
+              }}
+            >
+              🛠️ Admin
+            </Link>
+          )}
+
+          {/* User Info and Logout */}
+          <div style={{ 
+            marginLeft: '20px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px',
+            paddingLeft: '20px',
+            borderLeft: '1px solid #e8e8e8'
+          }}>
+            <span style={{ 
+              color: '#666', 
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              Welcome, {user?.username}
+            </span>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #ff4d4f',
+                backgroundColor: 'white',
+                color: '#ff4d4f',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = '#ff4d4f';
+                (e.target as HTMLButtonElement).style.color = 'white';
+              }}
+              onMouseOut={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                (e.target as HTMLButtonElement).style.color = '#ff4d4f';
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </header>
