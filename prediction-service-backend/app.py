@@ -1,15 +1,18 @@
 from flask import Flask
 from dotenv import load_dotenv
 
+from routes import prediction_bp
+
 load_dotenv()
 
 app = Flask(__name__)
+app.register_blueprint(prediction_bp)
 
 
 @app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+def home():  # put application's code here
+    return 'Prediction service is listening...'
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001)
