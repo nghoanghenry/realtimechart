@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-from service import fetch_price, fetch_sentiment
-from service.model import PriceModel
+from service import CryptoModel, fetch_price, fetch_sentiment
 
 prediction_bp = Blueprint('prediction', __name__, url_prefix='/predict')
 
@@ -15,8 +14,8 @@ def predict():
     if not symbol or not interval:
         return jsonify({'error': 'symbol and interval parameters are required'})
 
-    model = PriceModel()
+    model = CryptoModel()
     prices = fetch_price(symbol, interval)
     sentiments = fetch_sentiment(symbol)
 
-    return jsonify({'prediction': model.predict(prices, sentiments)})
+    return jsonify({'prediction': 'Hehehehe'})
