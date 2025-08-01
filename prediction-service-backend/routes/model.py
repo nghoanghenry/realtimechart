@@ -13,13 +13,10 @@ def upload():
         return jsonify({'error': 'No model file provided'}), 400
 
     model_file = request.files['model']
-    model_name = model_file.filename
-
-    save_path = os.path.join(os.getenv('UPLOAD_FOLDER'), model_name)
-    model_file.save(save_path)
+    model_file.save(os.getenv('MODEL_UPLOAD_PATH'))
 
     try:
-        CryptoModel().load_model(save_path)
-        return jsonify({'message': f'Model {model_name} uploaded successfully'}), 200
+        CryptoModel().load_model()
+        return jsonify({'message': 'Model uploaded successfully'}), 200
     except Exception as e:
         return jsonify({'error': f'Failed to load model: {str(e)}'}), 500

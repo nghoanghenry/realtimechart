@@ -1,21 +1,23 @@
 from flask import Blueprint, request, jsonify
 
-from service import CryptoModel, fetch_price, fetch_sentiment
+from service import fetch_price, fetch_sentiment, DataProcessor, CryptoModel
 
 prediction_bp = Blueprint('prediction', __name__, url_prefix='/predict')
 
 
-@prediction_bp.route('/', methods=['POST'])
+@prediction_bp.route('/', methods=['GET'])
 def predict():
-    data = request.get_json(force=True)
-    symbol = data.get('symbol')
-    interval = data.get('interval')
+    symbol = request.args.get('symbol')
+    if not symbol:
+        return jsonify({'error': 'symbol is required'})
 
-    if not symbol or not interval:
-        return jsonify({'error': 'symbol and interval parameters are required'})
+    price_data = fetch_price(symbol)
+    # sentiment_data = fetch_sentiment(symbol) # TODO with sentiment_data
 
-    model = CryptoModel()
-    prices = fetch_price(symbol, interval)
-    sentiments = fetch_sentiment(symbol)
+    data_processor = DataProcessor()
+    data = data_processor.preprocess(price_data, [])
 
-    return jsonify({'prediction': 'Hehehehe'})
+    pred = CryptoModel().model(data)
+    output = data_processor.postprocess(pred)
+
+    return jsonify({'prediction': output})

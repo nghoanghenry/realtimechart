@@ -1,10 +1,11 @@
 from flask import Flask
 from dotenv import load_dotenv
 
-from routes import prediction_bp
-from routes.model import model_bp
+from routes import prediction_bp, model_bp
+from service import CryptoModel
 
 load_dotenv()
+CryptoModel()
 
 app = Flask(__name__)
 app.register_blueprint(prediction_bp)
@@ -12,7 +13,7 @@ app.register_blueprint(model_bp)
 
 
 @app.route('/')
-def home():  # put application's code here
+def home():
     return 'Prediction service is listening...'
 
 
