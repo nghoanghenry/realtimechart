@@ -10,6 +10,7 @@ import LoginPageWrapper from './pages/LoginPageWrapper';
 import RegisterPageWrapper from './pages/RegisterPageWrapper';
 import VipUpgradePage from './pages/VipUpgradePage';
 import AdminPage from './pages/AdminPage';
+import './App.css';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -30,10 +31,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (!user) {
-    // Redirect to login page instead of AuthPage
-    return <Navigate to="/login" replace />;
-  }
+  // if (!user) {
+  //   // Redirect to login page instead of AuthPage
+  //   return <Navigate to="/login" replace />;
+  // }
   
   return <>{children}</>;
 }
