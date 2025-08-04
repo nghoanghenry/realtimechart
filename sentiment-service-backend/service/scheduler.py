@@ -8,7 +8,7 @@ class FetchScheduler:
     def __init__(self) -> None:
         self.scheduler = BackgroundScheduler()
         self.scheduler.add_job(self._fetch_job, trigger='interval', minutes=1)
-        self.rss_fetcher = RSSFetcher(['https://finance.yahoo.com/news/rssindex'])
+        self.rss_fetcher = RSSFetcher(['https://www.reddit.com/r/CryptoCurrency.rss', 'https://finance.yahoo.com/news/rssindex'])
         self.analyzer = Analyzer()
 
     def _fetch_job(self) -> None:
