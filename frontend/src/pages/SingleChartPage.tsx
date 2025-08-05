@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CustomProChart from '../components/CustomProChart';
+import SentimentNews from '../components/SentimentNews';
 
 export default function SingleChartPage() {
   const [selectedSymbol] = useState('BTCUSDT');
@@ -22,11 +23,14 @@ export default function SingleChartPage() {
             Live Trading Chart
           </h2>
         </div>
-        <CustomProChart 
-          symbol={selectedSymbol} 
-          interval="1m"
-          height="700px"
-        />
+        <div className="flex">
+          <CustomProChart 
+            symbol={selectedSymbol} 
+            interval="1m"
+            height="700px"
+          />
+          <SentimentNews/>
+        </div>
       </div>
     </div>
   );

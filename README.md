@@ -13,6 +13,7 @@ This is a final project for Software Architecture course - Building a financial 
 Phần 1: Hoàng + Nhi
 
 Phần 2: Khang + Bảo => tạo ra API để Nhi hiển thị lên các tin tức + kết quả dự đoán dựa trên tin tức
+ - hover for info
 
 Phần 3: Khang + Bảo 
 
