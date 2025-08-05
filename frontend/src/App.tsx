@@ -31,10 +31,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // if (!user) {
-  //   // Redirect to login page instead of AuthPage
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!user) {
+    // Redirect to login page instead of AuthPage
+    return <Navigate to="/login" replace />;
+  }
   
   return <>{children}</>;
 }
