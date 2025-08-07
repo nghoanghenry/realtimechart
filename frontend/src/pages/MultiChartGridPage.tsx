@@ -27,7 +27,7 @@ export default function MultiChartGrid() {
     if (count === 1) return 1;
     if (count <= 4) return 2;
     if (count <= 6) return 3;
-    return 3; // Max 3 columns for better readability
+    return 2;
   };
 
   const getChartHeight = (count: number) => {
@@ -43,7 +43,7 @@ export default function MultiChartGrid() {
       padding: '0' 
     }}>
       <div style={{ 
-        maxWidth: '1400px', 
+        maxWidth: '100%', 
         margin: '0 auto',
         padding: '24px'
       }}>
@@ -52,7 +52,7 @@ export default function MultiChartGrid() {
           backgroundColor: 'white',
           borderRadius: '8px',
           padding: '24px',
-          marginBottom: '24px',
+          marginBottom: '2px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <div style={{
@@ -142,7 +142,7 @@ export default function MultiChartGrid() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${getGridCols(appliedChartCount)}, 1fr)`,
-          gap: '20px',
+          gap: '2px',
           gridAutoRows: 'auto'
         }}>
           {Array.from({ length: appliedChartCount }, (_, index) => {

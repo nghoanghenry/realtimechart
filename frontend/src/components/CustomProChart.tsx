@@ -229,6 +229,7 @@ export default function CustomProChart({
         locale: 'en-US'
       });
 
+      chartRef.current.setTimezone('Asia/Bangkok');
       console.log('✅ Chart initialized successfully');
       setIsLoading(false);
       initializingRef.current = false;

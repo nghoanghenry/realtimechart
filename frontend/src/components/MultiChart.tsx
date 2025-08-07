@@ -286,7 +286,7 @@ export default function MultiChart({ selectedSymbol = 'BTCUSDT' }: MultiChartPro
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', 
-        gap: '20px'
+        gap: '2px'
       }}>
         {TIME_FRAMES.map((timeFrame, index) => (
           <div key={`${symbol}-${timeFrame.interval}-${index}`} style={{
