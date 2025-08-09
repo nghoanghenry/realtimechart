@@ -10,15 +10,15 @@ class FetchScheduler:
         self.scheduler = BackgroundScheduler()
         self.rss_fetcher = RSSFetcher(
             [
-                # "https://www.reddit.com/r/CryptoCurrency.rss",
-                # "https://finance.yahoo.com/news/rssindex",
-                # "https://www.reddit.com/r/Bitcoin.rss",
+                "https://www.reddit.com/r/CryptoCurrency.rss",
+                "https://finance.yahoo.com/news/rssindex",
+                "https://www.reddit.com/r/Bitcoin.rss",
                 "https://www.reddit.com/r/ethereum.rss",
             ]
         )
         self.analyzer = Analyzer()
-        run_time = datetime.datetime.now() + datetime.timedelta(seconds=4)
-        self.scheduler.add_job(self._fetch_job, trigger="date", run_date=run_time)
+        # run_time = datetime.datetime.now() + datetime.timedelta(seconds=4)
+        # self.scheduler.add_job(self._fetch_job, trigger="date", run_date=run_time)
         self.scheduler.add_job(self._fetch_job, trigger="interval", seconds=3600)
 
     def _fetch_job(self) -> None:
