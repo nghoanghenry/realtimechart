@@ -33,7 +33,7 @@ export default function SentimentNews() {
     fetchNews();
   }, []);
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 row-start-1 w-[30rem] h-[30rem] flex flex-col gap-4">
+    <div className="rounded-lg shadow-lg p-4 row-start-1 w-[30rem] h-auto flex flex-col gap-4">
       {news.map((item) => (
         <NewsBlock
           coin={item.coin}
