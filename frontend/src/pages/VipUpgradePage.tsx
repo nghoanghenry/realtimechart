@@ -205,7 +205,7 @@ const VipUpgradePage: React.FC = () => {
             <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
               📦 Gói: {plans[selectedPlan].name} ({plans[selectedPlan].duration})
             </div>
-            <div style={{ fontSize: '14px', color: '#666', fontFamily: 'monospace', backgroundColor: '#e9ecef', padding: '8px', borderRadius: '4px' }}>
+            <div style={{ fontSize: '14px', color: '#666', fontFamily: 'var(--font-family-primary)', backgroundColor: '#e9ecef', padding: '8px', borderRadius: '4px' }}>
               🆔 Payment ID: {paymentId}
             </div>
           </div>

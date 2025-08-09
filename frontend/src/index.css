@@ -1,5 +1,7 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Font family variable */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+  font-family: var(--font-family-primary);
   line-height: 1.5;
   font-weight: 400;
 
@@ -11,6 +13,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override all default fonts globally */
+*, *::before, *::after {
+  font-family: var(--font-family-primary) !important;
 }
 
 a {
@@ -28,6 +35,11 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-family-primary) !important;
+}
+
+html {
+  font-family: var(--font-family-primary) !important;
 }
 
 h1 {
@@ -69,9 +81,9 @@ button:focus-visible {
 
 /* ...existing code... */
 
-/* Chart font styling - cách này chắc chắn hơn */
+/* Chart font styling - sử dụng biến chung */
 .klinecharts-pro {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-family: var(--font-family-primary) !important;
   font-size: 14px !important;
 }
 
@@ -79,20 +91,20 @@ button:focus-visible {
 .klinecharts-pro *,
 .klinecharts-pro canvas + div,
 .klinecharts-pro svg text {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-family: var(--font-family-primary) !important;
 }
 
 /* Font cho axis labels */
 .klinecharts-pro .klinecharts-axis-text,
 .klinecharts-pro .axis-text {
-  font-family: 'Consolas', 'Monaco', monospace !important;
+  font-family: var(--font-family-primary) !important;
   font-size: 11px !important;
 }
 
 /* Font cho price labels và crosshair */
 .klinecharts-pro .klinecharts-crosshair-text,
 .klinecharts-pro .crosshair-text {
-  font-family: 'Consolas', 'Monaco', monospace !important;
+  font-family: var(--font-family-primary) !important;
   font-size: 12px !important;
   font-weight: 600 !important;
 }
@@ -100,13 +112,13 @@ button:focus-visible {
 /* Font cho tooltip */
 .klinecharts-pro .klinecharts-tooltip,
 .klinecharts-pro .tooltip {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-family: var(--font-family-primary) !important;
   font-size: 12px !important;
 }
 
 /* Dark mode font */
 .klinecharts-pro[data-theme="dark"] {
-  font-family: 'Roboto Mono', 'Consolas', monospace !important;
+  font-family: var(--font-family-primary) !important;
 }
 
 /* Xóa phần CSS variables cũ vì có thể không work */

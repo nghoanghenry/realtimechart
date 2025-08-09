@@ -1283,7 +1283,7 @@ export default function BacktestChart() {
       flexDirection: 'column',
       gap: '20px', 
       padding: '0', 
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'var(--font-family-primary)',
       minHeight: '100vh'
     }}>
       {/* Chart Section */}
@@ -1954,13 +1954,13 @@ export default function BacktestChart() {
                       <td style={{ padding: '8px', color: '#666' }}>
                         {new Date(trade.timestamp).toLocaleDateString()}
                       </td>
-                      <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'monospace' }}>
+                      <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'var(--font-family-primary)' }}>
                         ${trade.price.toFixed(2)}
                       </td>
                       <td style={{ 
                         padding: '8px', 
                         textAlign: 'right', 
-                        fontFamily: 'monospace',
+                        fontFamily: 'var(--font-family-primary)',
                         color: trade.pnl !== undefined ? (trade.pnl >= 0 ? '#26a69a' : '#ef5350') : '#666'
                       }}>
                         {trade.pnl !== undefined ? 

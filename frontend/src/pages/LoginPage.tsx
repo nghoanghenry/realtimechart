@@ -35,7 +35,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister }) => {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#f5f5f5',
-      fontFamily: 'Arial, sans-serif'
+      fontFamily: 'var(--font-family-primary)'
     }}>
       <div style={{
         backgroundColor: 'white',

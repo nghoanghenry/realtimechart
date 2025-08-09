@@ -368,7 +368,7 @@ export default function CustomProChart({
           borderRadius: '8px',
           zIndex: 20,
           fontSize: '14px',
-          fontFamily: 'Consolas, monospace',
+          fontFamily: 'var(--font-family-primary)',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           minWidth: '180px'
         }}>
@@ -482,12 +482,12 @@ export default function CustomProChart({
         /* Override chart fonts */
         .klinecharts-pro,
         .klinecharts-pro * {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+          font-family: var(--font-family-primary) !important;
         }
         
         /* Specific chart text elements */
         div[class*="klinecharts"] {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+          font-family: var(--font-family-primary) !important;
         }
         
         /* Price ticker hover effect */

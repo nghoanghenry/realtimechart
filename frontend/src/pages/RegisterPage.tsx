@@ -70,7 +70,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#f5f5f5',
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'var(--font-family-primary)',
       padding: '20px 0'
     }}>
       <div style={{

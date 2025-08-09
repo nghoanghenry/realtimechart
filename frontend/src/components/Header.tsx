@@ -1,9 +1,25 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useState, useRef, useEffect } from 'react';
+import { IoChevronDown } from 'react-icons/io5';
 
 export default function Header() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getActiveView = () => {
     if (location.pathname === '/') return 'single';
@@ -17,229 +33,191 @@ export default function Header() {
 
   const activeView = getActiveView();
 
-  const navButtonStyle = (viewType: string) => ({
-    padding: '8px 16px',
-    border: activeView === viewType ? '2px solid #1890ff' : '1px solid #d9d9d9',
-    backgroundColor: activeView === viewType ? '#e6f7ff' : 'white',
-    color: activeView === viewType ? '#1890ff' : '#666',
-    borderRadius: '6px',
-    textDecoration: 'none',
-    fontSize: '14px',
-    fontWeight: activeView === viewType ? 600 : 400,
-    transition: 'all 0.3s ease',
-    display: 'inline-block'
-  });
+  const navigationItems = [
+    { path: '/', label: 'Single Chart', key: 'single' },
+    { path: '/multichart', label: 'Multi Chart', key: 'multichart' },
+    { path: '/multitimeframechart', label: 'Multi Timeframe', key: 'multi' },
+    { path: '/backtest', label: 'Backtest', key: 'backtest' },
+  ];
 
   const handleLogout = () => {
     logout();
+    setIsDropdownOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   return (
-    <header style={{
-      backgroundColor: 'white',
-      borderBottom: '1px solid #e8e8e8',
-      padding: '16px 24px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ 
-          margin: 0, 
-          color: '#1890ff',
-          fontSize: '24px',
-          fontWeight: 600
-        }}>
-          Crypto Trading Dashboard
-        </h1>
-        
-        {/* Navigation buttons */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Link
-            to="/"
-            style={navButtonStyle('single')}
-            onMouseOver={(e) => {
-              if (activeView !== 'single') {
-                e.currentTarget.style.borderColor = '#1890ff';
-                e.currentTarget.style.color = '#1890ff';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (activeView !== 'single') {
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.color = '#666';
-              }
-            }}
-          >
-            📈 Single Chart
-          </Link>
-          
-          <Link
-            to="/multichart"
-            style={navButtonStyle('multichart')}
-            onMouseOver={(e) => {
-              if (activeView !== 'multichart') {
-                e.currentTarget.style.borderColor = '#1890ff';
-                e.currentTarget.style.color = '#1890ff';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (activeView !== 'multichart') {
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.color = '#666';
-              }
-            }}
-          >
-            📊 Multi Chart
-          </Link>
-          
-          <Link
-            to="/multitimeframechart"
-            style={navButtonStyle('multi')}
-            onMouseOver={(e) => {
-              if (activeView !== 'multi') {
-                e.currentTarget.style.borderColor = '#1890ff';
-                e.currentTarget.style.color = '#1890ff';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (activeView !== 'multi') {
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.color = '#666';
-              }
-            }}
-          >
-            📊 Multi Timeframe Chart
-          </Link>
-          
-          <Link
-            to="/backtest"
-            style={navButtonStyle('backtest')}
-            onMouseOver={(e) => {
-              if (activeView !== 'backtest') {
-                e.currentTarget.style.borderColor = '#1890ff';
-                e.currentTarget.style.color = '#1890ff';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (activeView !== 'backtest') {
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.color = '#666';
-              }
-            }}
-          >
-            🔬 Backtest
-          </Link>
-
-          {/* VIP Upgrade Button - Special styling - Hide for admin */}
-          {user?.role !== 'admin' && (
-            <Link
-              to="/vip"
-              style={{
-                ...navButtonStyle('vip'),
-                background: activeView === 'vip' 
-                  ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' 
-                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
-                transform: activeView === 'vip' ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onMouseOver={(e) => {
-                if (activeView !== 'vip') {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.6)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (activeView !== 'vip') {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
-                }
-              }}
-            >
-              ⭐ {user?.role === 'vip' ? 'VIP Member' : 'Nâng cấp VIP'}
-            </Link>
-          )}
-
-          {/* Admin Button - Only show for admin users */}
-          {user?.role === 'admin' && (
-            <Link
-              to="/admin"
-              style={{
-                ...navButtonStyle('admin'),
-                background: activeView === 'admin' 
-                  ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' 
-                  : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                color: 'white',
-                border: 'none',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(240, 147, 251, 0.4)',
-                transform: activeView === 'admin' ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onMouseOver={(e) => {
-                if (activeView !== 'admin') {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(240, 147, 251, 0.6)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (activeView !== 'admin') {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(240, 147, 251, 0.4)';
-                }
-              }}
-            >
-              🛠️ Admin
-            </Link>
-          )}
-
-          {/* User Info and Logout */}
-          <div style={{ 
-            marginLeft: '20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '12px',
-            paddingLeft: '20px',
-            borderLeft: '1px solid #e8e8e8'
-          }}>
-            <span style={{ 
-              color: '#666', 
-              fontSize: '14px',
-              fontWeight: '500'
-            }}>
-              Welcome, {user?.username}
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: '6px 12px',
-                border: '1px solid #ff4d4f',
-                backgroundColor: 'white',
-                color: '#ff4d4f',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = '#ff4d4f';
-                (e.target as HTMLButtonElement).style.color = 'white';
-              }}
-              onMouseOut={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = 'white';
-                (e.target as HTMLButtonElement).style.color = '#ff4d4f';
-              }}
-            >
-              Logout
-            </button>
-          </div>
+    <header className="bg-white/30 backdrop-blur-md shadow-lg sticky top-0 z-50">
+      <div className="relative max-w-full mx-auto px-6 flex justify-between items-center min-h-[50px]">
+        <div className="flex-shrink-0">
+          <h1 className="m-0 text-black text-2xl font-bold tracking-tight drop-shadow-sm">
+            TradeX
+          </h1>
         </div>
+
+        <nav className="flex items-center gap-6 flex-1 justify-end">
+          <div className="flex items-center gap-2 p-1">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.key}
+                to={item.path}
+                className={`
+                  px-5 py-1 rounded-xl text-sm font-medium 
+                  transition-all duration-300 ease-out relative whitespace-nowrap
+                  hover:text-black hover:bg-gray-200 hover:-translate-y-0.5
+                  ${activeView === item.key 
+                    ? 'text-black bg-gray-100 font-semibold shadow-lg' 
+                    : 'text-gray-700'
+                  }
+                `}
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            {/* VIP Button - Hide for admin */}
+            {user?.role !== 'admin' && (
+              <Link
+                to="/vip"
+                className={`
+                  px-5 py-1 rounded-xl text-sm font-semibold text-gray-800
+                  bg-gradient-to-br from-yellow-400 to-yellow-300
+                  border border-yellow-400/30 shadow-lg shadow-yellow-400/30
+                  transition-all duration-300 ease-out whitespace-nowrap
+                  hover:from-yellow-300 hover:to-yellow-400 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-yellow-400/40
+                  ${activeView === 'vip' 
+                    ? 'from-yellow-300 to-yellow-400 shadow-xl shadow-yellow-400/50' 
+                    : ''
+                  }
+                `}
+              >
+                {user?.role === 'vip' ? 'VIP Member' : 'Upgrade VIP'}
+              </Link>
+            )}
+
+            {/* Admin Button - Only show for admin users */}
+            {user?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className={`
+                  px-5 py-1 rounded-xl text-sm font-semibold text-white
+                  bg-gradient-to-br from-red-500 to-red-600
+                  border border-red-500/30 shadow-lg shadow-red-500/30
+                  transition-all duration-300 ease-out whitespace-nowrap
+                  hover:from-red-600 hover:to-red-500 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-red-500/40
+                  ${activeView === 'admin' 
+                    ? 'from-red-600 to-red-500 shadow-xl shadow-red-500/50' 
+                    : ''
+                  }
+                `}
+              >
+                Admin Panel
+              </Link>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 pl-6 border-l border-gray-300 relative" ref={dropdownRef}>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <span className="text-gray-700 text-sm font-normal whitespace-nowrap">Welcome,</span>
+              <span className="text-gray-900 font-semibold">{user?.username}</span>
+              <button 
+                onClick={toggleDropdown} 
+                className="bg-transparent border-none text-gray-600 cursor-pointer p-1 rounded transition-all duration-300 ease-out flex items-center justify-center hover:bg-gray-100 hover:text-gray-900"
+                aria-expanded={isDropdownOpen}
+              >
+                <IoChevronDown 
+                  className={`transition-transform duration-300 ease-out ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  size={16}
+                />
+              </button>
+            </div>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 min-w-[160px] overflow-hidden z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                <Link 
+                  to="/account" 
+                  className="block w-full px-4 py-3 text-gray-800 text-sm font-medium border-none bg-transparent cursor-pointer transition-colors duration-200 text-left hover:bg-gray-50 active:bg-gray-100"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Tài khoản
+                </Link>
+                <button 
+                  onClick={handleLogout} 
+                  className="block w-full px-4 py-3 text-gray-800 text-sm font-medium border-none bg-transparent cursor-pointer transition-colors duration-200 text-left hover:bg-gray-50 active:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
       </div>
+
+      {/* Responsive styles for mobile */}
+      <style>{`
+        @media (max-width: 1200px) {
+          .container {
+            padding: 0 16px;
+          }
+        }
+        
+        @media (max-width: 992px) {
+          .title {
+            font-size: 20px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .container {
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px;
+            min-height: auto;
+          }
+          
+          .navigation {
+            width: 100%;
+            justify-content: space-between;
+          }
+          
+          .navLinks {
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+          
+          .userSection {
+            border-left: none;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-left: 0;
+            padding-top: 16px;
+            width: 100%;
+            justify-content: center;
+          }
+          
+          .dropdown {
+            right: 50%;
+            transform: translateX(50%);
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .title {
+            font-size: 18px;
+            text-align: center;
+          }
+          
+          .welcomeText {
+            font-size: 13px;
+          }
+          
+          .dropdown {
+            min-width: 140px;
+          }
+        }
+      `}</style>
     </header>
   );
 }
