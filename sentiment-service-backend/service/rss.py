@@ -22,7 +22,9 @@ class RSSFetcher:
             }
             response = requests.get(url, headers=headers)
             feed = feedparser.parse(response.content)
+            print(f"[✔] Fetching {len(feed.entries)} entries from {url}")
             for entry in feed.entries:
+                print(f"[+] Found entry: {entry.title} - {entry.link}")
                 if entry.link not in self.seen_urls:
                     self.seen_urls.add(entry.link)
                     articles.append(
