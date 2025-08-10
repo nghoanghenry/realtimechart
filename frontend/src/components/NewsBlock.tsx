@@ -44,7 +44,8 @@ export default function NewsBlock({
       <div className="extra flex justify-between align-middle pt-2">
         <span className="text-gray-500 text-xs flex items-center gap-1">
           <Clock size={14} />
-          15 minutes ago
+          {uploadDate}
+          {/* 15 minutes ago */}
         </span>
 
         {coin !== "None" && (
