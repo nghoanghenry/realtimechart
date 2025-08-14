@@ -1,0 +1,63 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672 # Cổng quản lý và kết nối RabbitMQ
+      - 15672:15672 # Cổng web management (nếu cần)
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379 # Cổng Redis
+
+  collector:
+    build: ./data-collector
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+
+  gateway:
+    build: ./gateway
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    deploy:
+      replicas: 2 # Số lượng instance Gateway (có thể scale lên)
+    # Không cần ports, vì NGINX sẽ xử lý
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3010:3010"
+    expose:
+      - "3010"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf # Mount file config
+    ports:
+      - 80:80 # Ánh xạ cổng 80 trên host đến cổng 80 trong container NGINX
+    depends_on:
+      - gateway
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
