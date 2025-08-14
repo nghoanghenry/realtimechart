@@ -721,7 +721,7 @@ export default function BacktestChart() {
   const loadHistoricalData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/history/${config.symbol}?interval=${config.interval}&limit=500`);
+      const response = await fetch(`http://localhost/api/history/${config.symbol}?interval=${config.interval}&limit=500`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
       const data: KLineData[] = await response.json();
