@@ -32,7 +32,7 @@ class BinanceDatafeed {
   private currentInterval: string = '1m';
 
   searchSymbols(search?: string): Promise<SymbolInfo[]> {
-    return fetch('http://localhost:3001/api/symbols')
+    return fetch('http://localhost/api/symbols')
       .then(res => res.json())
       .catch(() => [
         { ticker: 'BTCUSDT', name: 'Bitcoin', exchange: 'Binance', market: 'crypto', priceCurrency: 'USDT', type: 'crypto' },
@@ -46,7 +46,7 @@ class BinanceDatafeed {
       console.log(`📈 Fetching historical data for ${symbol.ticker} ${interval}`);
       
       const response = await fetch(
-        `http://localhost:3001/api/history/${symbol.ticker}?interval=${interval}&limit=1000`
+        `http://localhost/api/history/${symbol.ticker}?interval=${interval}&limit=1000`
       );
       
       if (!response.ok) {

@@ -19,7 +19,7 @@ class WebSocketService {
   private historicalCallbacks = new Map<string, HistoricalDataCallback>();
   private activeSubscriptions = new Set<string>();
 
-  connect(url: string = 'http://localhost:3001') {
+  connect(url: string = 'http://localhost') {
     if (this.socket?.connected) return;
 
     this.socket = io(url);
