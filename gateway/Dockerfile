@@ -1,0 +1,6 @@
+# c:\realtimechart\realtimechart\gateway\Dockerfile
+FROM node:18
+WORKDIR /app
+COPY . .
+RUN npm install
+CMD ["node", "server-gateway.js"]
