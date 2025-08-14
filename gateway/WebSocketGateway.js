@@ -1,13 +1,13 @@
 const amqplib = require('amqplib');
 const { Server } = require('socket.io');
-const redisClient = require('./redis');
+const axios = require('axios');
 
 class WebSocketGateway {
   constructor(server) {
     this.io = new Server(server, { cors: { origin: '*' } });
     this.channel = null;
-    this.subscribers = new Map(); // ⭐ Track per-socket subscriptions like monolithic
-    this.redisClient = redisClient; // ⭐ FIXED: Expose Redis client for external access
+    this.subscribers = new Map(); // Track per-socket subscriptions
+    this.baseUrl = 'https://api.binance.com/api/v3'; // ⭐ Added for direct API calls
     this.connectToRabbitMQ();
     this.setupSocketIO();
   }
@@ -40,11 +40,10 @@ class WebSocketGateway {
                   low: data.low,
                   close: data.close,
                   volume: data.volume,
-                  isClosed: data.isClosed  // ⭐ FIXED: Include isClosed field
+                  isClosed: data.isClosed
                 }
               };
               
-              // ⭐ FIXED: Only emit to subscribed clients (like monolithic)
               this.broadcastToSubscribers(symbol, interval, formattedData);
             }
             this.channel.ack(msg);
@@ -59,7 +58,32 @@ class WebSocketGateway {
     }
   }
 
-  // ⭐ NEW: Broadcast only to subscribed clients (matching monolithic behavior)
+  // ⭐ NEW: Fetch historical data directly from Binance API
+  async getHistoricalData(symbol, interval = '1m', limit = 1000) {
+    try {
+      console.log(`🔄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
+      const response = await axios.get(`${this.baseUrl}/klines`, {
+        params: { symbol, interval, limit },
+        timeout: 10000
+      });
+      
+      const data = response.data.map(kline => ({
+        timestamp: kline[0],
+        open: parseFloat(kline[1]),
+        high: parseFloat(kline[2]),
+        low: parseFloat(kline[3]),
+        close: parseFloat(kline[4]),
+        volume: parseFloat(kline[5])
+      }));
+      
+      console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
+      return data;
+    } catch (error) {
+      console.error(`❌ Error fetching historical data for ${symbol} ${interval}:`, error.message);
+      return [];
+    }
+  }
+
   broadcastToSubscribers(symbol, interval, data) {
     const subscriptionKey = `${symbol}:${interval}`;
     let sentCount = 0;
@@ -80,7 +104,6 @@ class WebSocketGateway {
     this.io.on('connection', (socket) => {
       console.log(`Client connected: ${socket.id}`);
       
-      // ⭐ FIXED: Initialize per-socket subscriptions (like monolithic)
       socket.subscriptions = new Set();
 
       socket.on('subscribe', async ({ symbol, interval }) => {
@@ -92,15 +115,12 @@ class WebSocketGateway {
           // Add to socket's subscriptions
           socket.subscriptions.add(subscriptionKey);
           
-          // Send historical data
-          const cacheKey = `kline:${symbol}:${interval}`;
-          const cachedData = await this.redisClient.get(cacheKey);
-          const data = cachedData ? JSON.parse(cachedData) : [];
+          // ⭐ MODIFIED: Fetch fresh historical data from Binance API
+          const data = await this.getHistoricalData(symbol, interval);
           
-          console.log(`Sending ${data.length} historical bars for ${cacheKey}`);
+          console.log(`📈 Sending ${data.length} fresh historical bars for ${symbol} ${interval}`);
           socket.emit('historical_data', { symbol, data });
           
-          // ⭐ FIXED: Send subscription acknowledgment (like monolithic)
           socket.emit('subscribed', { symbol, interval });
           
           // Track global subscriptions for stream management
@@ -136,7 +156,6 @@ class WebSocketGateway {
           }
         }
         
-        // ⭐ FIXED: Send unsubscription acknowledgment (like monolithic)
         socket.emit('unsubscribed', { symbol, interval });
         console.log(`Client ${socket.id} unsubscribed from ${subscriptionKey}`);
       });
@@ -144,7 +163,7 @@ class WebSocketGateway {
       socket.on('disconnect', () => {
         console.log(`Client disconnected: ${socket.id}`);
         
-        // ⭐ FIXED: Cleanup subscriptions when client disconnects (like monolithic)
+        // Cleanup subscriptions when client disconnects
         if (socket.subscriptions) {
           socket.subscriptions.forEach((subscriptionKey) => {
             if (this.subscribers.has(subscriptionKey)) {
@@ -161,7 +180,6 @@ class WebSocketGateway {
     });
   }
 
-  // ⭐ NEW: Get subscription statistics (for monitoring)
   getSubscriptionStats() {
     const stats = {
       totalClients: this.io.sockets.sockets.size,

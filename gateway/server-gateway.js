@@ -10,7 +10,7 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-// ⭐ NEW: Stream management communication with collector
+// Stream management communication with collector
 class StreamCoordinator {
   constructor() {
     this.rabbitConn = null;
@@ -50,7 +50,7 @@ class StreamCoordinator {
 
 const streamCoordinator = new StreamCoordinator();
 
-// ⭐ ENHANCED: WebSocketGateway with stream coordination
+// Enhanced WebSocketGateway with stream coordination
 class EnhancedWebSocketGateway extends WebSocketGateway {
   constructor(server, coordinator) {
     super(server);
@@ -64,7 +64,7 @@ class EnhancedWebSocketGateway extends WebSocketGateway {
       socket.subscriptions = new Set();
 
       socket.on('subscribe', async ({ symbol, interval }) => {
-        console.log(`📥 Subscribe request: ${symbol} ${interval} from ${socket.id}`);
+        console.log(`🔥 Subscribe request: ${symbol} ${interval} from ${socket.id}`);
         
         try {
           const subscriptionKey = `${symbol}:${interval}`;
@@ -72,7 +72,7 @@ class EnhancedWebSocketGateway extends WebSocketGateway {
           // Add to socket's subscriptions
           socket.subscriptions.add(subscriptionKey);
           
-          // ⭐ ENHANCED: Track subscription counts and coordinate with collector
+          // Track subscription counts and coordinate with collector
           if (!this.subscriptionCounts.has(subscriptionKey)) {
             this.subscriptionCounts.set(subscriptionKey, 1);
             // First subscriber - request stream start
@@ -83,12 +83,10 @@ class EnhancedWebSocketGateway extends WebSocketGateway {
             console.log(`➕ Additional subscriber for ${subscriptionKey} (total: ${count})`);
           }
           
-          // Send historical data
-          const cacheKey = `kline:${symbol}:${interval}`;
-          const cachedData = await this.redisClient.get(cacheKey);
-          const data = cachedData ? JSON.parse(cachedData) : [];
+          // ⭐ MODIFIED: Fetch fresh historical data directly from API
+          const data = await this.getHistoricalData(symbol, interval);
           
-          console.log(`📈 Sending ${data.length} historical bars for ${cacheKey}`);
+          console.log(`📈 Sending ${data.length} fresh historical bars for ${symbol} ${interval}`);
           socket.emit('historical_data', { symbol, data });
           
           // Send subscription acknowledgment
@@ -108,7 +106,7 @@ class EnhancedWebSocketGateway extends WebSocketGateway {
 
       socket.on('unsubscribe', async ({ symbol, interval }) => {
         const subscriptionKey = `${symbol}:${interval}`;
-        console.log(`📥 Unsubscribe request: ${subscriptionKey} from ${socket.id}`);
+        console.log(`🔥 Unsubscribe request: ${subscriptionKey} from ${socket.id}`);
         
         await this.handleUnsubscribe(socket, subscriptionKey, symbol, interval);
         socket.emit('unsubscribed', { symbol, interval });
@@ -144,7 +142,7 @@ class EnhancedWebSocketGateway extends WebSocketGateway {
       }
     }
     
-    // ⭐ ENHANCED: Coordinate with collector for stream management
+    // Coordinate with collector for stream management
     if (this.subscriptionCounts.has(subscriptionKey)) {
       const count = this.subscriptionCounts.get(subscriptionKey) - 1;
       
@@ -181,11 +179,11 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    gateway: 'enhanced'
+    gateway: 'enhanced-no-cache'
   });
 });
 
-// ⭐ NEW: Detailed health endpoint
+// Detailed health endpoint
 app.get('/health/detailed', (req, res) => {
   const stats = wsGateway.getEnhancedStats();
   res.json({
@@ -222,27 +220,22 @@ app.get('/api/symbols', (req, res) => {
   res.json(symbols);
 });
 
-// ⭐ NEW: API endpoint to get historical data (compatibility with monolithic)
+// ⭐ MODIFIED: API endpoint to get fresh historical data from Binance
 app.get('/api/history/:symbol', async (req, res) => {
   try {
     const { symbol } = req.params;
     const { interval = '1m', limit = 1000 } = req.query;
-    const cacheKey = `kline:${symbol}:${interval}`;
 
-    const cachedData = await wsGateway.redisClient.get(cacheKey);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
-
-    // If not in cache, return empty array (collector will populate it)
-    res.json([]);
+    // Always fetch fresh data from Binance API
+    const data = await wsGateway.getHistoricalData(symbol, interval, parseInt(limit));
+    res.json(data);
   } catch (error) {
     console.error('❌ Error fetching historical data:', error);
     res.status(500).json({ error: 'Failed to fetch historical data' });
   }
 });
 
-// ⭐ NEW: Stream management endpoints for debugging
+// Stream management endpoints for debugging
 app.get('/api/streams', (req, res) => {
   const stats = wsGateway.getEnhancedStats();
   res.json(stats);
@@ -270,7 +263,7 @@ app.post('/api/streams/force-stop/:symbol/:interval', async (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`🚀 Enhanced Gateway running on port ${PORT}`);
+  console.log(`🚀 Enhanced Gateway (No Cache) running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔍 Detailed stats: http://localhost:${PORT}/health/detailed`);
   console.log(`🎯 Stream management: http://localhost:${PORT}/api/streams`);
