@@ -23,7 +23,7 @@ const VipUpgradePage: React.FC = () => {
   const loadQRConfig = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/api/vip/qr-config', {
+      const response = await fetch('http://localhost:3010/api/vip/qr-config', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -86,7 +86,7 @@ const VipUpgradePage: React.FC = () => {
       const amount = plan === 'monthly' ? qrConfig.monthlyAmount : qrConfig.yearlyAmount;
       
       // Generate QR payment info (not create payment record yet)
-      const response = await fetch('http://localhost:3002/api/vip/create-vip-payment', {
+      const response = await fetch('http://localhost:3010/api/vip/create-vip-payment', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ const VipUpgradePage: React.FC = () => {
       const amount = selectedPlan === 'monthly' ? qrConfig.monthlyAmount : qrConfig.yearlyAmount;
       
       // Confirm payment and create record
-      const response = await fetch('http://localhost:3002/api/vip/confirm-payment', {
+      const response = await fetch('http://localhost:3010/api/vip/confirm-payment', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

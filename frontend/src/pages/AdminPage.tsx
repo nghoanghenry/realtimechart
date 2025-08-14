@@ -78,7 +78,7 @@ const AdminPage: React.FC = () => {
   const loadQRConfig = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/api/admin/qr-config', {
+      const response = await fetch('http://localhost:3010/api/admin/qr-config', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -148,7 +148,7 @@ const AdminPage: React.FC = () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/api/admin/pending-payments', {
+      const response = await fetch('http://localhost:3010/api/admin/pending-payments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -168,7 +168,7 @@ const AdminPage: React.FC = () => {
   const handleQRConfigSave = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/api/admin/qr-config', {
+      const response = await fetch('http://localhost:3010/api/admin/qr-config', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -196,7 +196,7 @@ const AdminPage: React.FC = () => {
   const handleApprovePayment = async (paymentId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:3002/api/admin/approve-payment/${paymentId}`, {
+      const response = await fetch(`http://localhost:3010/api/admin/approve-payment/${paymentId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -219,7 +219,7 @@ const AdminPage: React.FC = () => {
   const handleRejectPayment = async (paymentId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:3002/api/admin/reject-payment/${paymentId}`, {
+      const response = await fetch(`http://localhost:3010/api/admin/reject-payment/${paymentId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
