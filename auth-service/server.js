@@ -131,7 +131,7 @@ app.use('*', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3010;
 
 app.listen(PORT, () => {
   console.log(`🚀 Auth Service running on port ${PORT}`);
