@@ -721,7 +721,13 @@ export default function BacktestChart() {
   const loadHistoricalData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost/api/history/${config.symbol}?interval=${config.interval}&limit=500`);
+      // Convert datetime-local to timestamp
+      const startTime = new Date(config.fromDate).getTime();
+      const endTime = new Date(config.toDate).getTime();
+      
+      const response = await fetch(
+        `http://localhost/api/history/${config.symbol}?interval=${config.interval}&startTime=${startTime}&endTime=${endTime}&limit=500`
+      );
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
       const data: KLineData[] = await response.json();
@@ -1047,7 +1053,15 @@ export default function BacktestChart() {
   };
 
   // Run backtest
-  const runBacktest = () => {
+  const runBacktest = async () => {
+    try {
+      await loadHistoricalData();
+      // Chờ một chút để chart được khởi tạo
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('Error loading data for backtest:', error);
+      return;
+    }
     if (historicalData.length === 0) return;
     
     setIsRunning(true);

@@ -224,10 +224,16 @@ app.get('/api/symbols', (req, res) => {
 app.get('/api/history/:symbol', async (req, res) => {
   try {
     const { symbol } = req.params;
-    const { interval = '1m', limit = 1000 } = req.query;
+    const { interval = '1m', limit = 1000, startTime, endTime } = req.query;
 
     // Always fetch fresh data from Binance API
-    const data = await wsGateway.getHistoricalData(symbol, interval, parseInt(limit));
+    const data = await wsGateway.getHistoricalData(
+      symbol, 
+      interval, 
+      parseInt(limit),
+      startTime ? parseInt(startTime) : null,
+      endTime ? parseInt(endTime) : null
+    );
     res.json(data);
   } catch (error) {
     console.error('❌ Error fetching historical data:', error);

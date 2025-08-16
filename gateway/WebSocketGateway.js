@@ -59,14 +59,21 @@ class WebSocketGateway {
   }
 
   // ⭐ NEW: Fetch historical data directly from Binance API
-  async getHistoricalData(symbol, interval = '1m', limit = 1000) {
+  async getHistoricalData(symbol, interval = '1m', limit = 1000, startTime = null, endTime = null) {
     try {
       console.log(`🔄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
+      
+      const params = { symbol, interval, limit };
+      
+      // Add time range if provided
+      if (startTime) params.startTime = startTime;
+      if (endTime) params.endTime = endTime;
+      
       const response = await axios.get(`${this.baseUrl}/klines`, {
-        params: { symbol, interval, limit },
+        params,
         timeout: 10000
       });
-      
+            
       const data = response.data.map(kline => ({
         timestamp: kline[0],
         open: parseFloat(kline[1]),
@@ -75,7 +82,7 @@ class WebSocketGateway {
         close: parseFloat(kline[4]),
         volume: parseFloat(kline[5])
       }));
-      
+            
       console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
       return data;
     } catch (error) {

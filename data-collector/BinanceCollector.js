@@ -26,30 +26,37 @@ class BinanceCollector {
   }
 
   // ⭐ MODIFIED: Always fetch from Binance API, no caching
-  async getHistoricalData(symbol, interval = '1m', limit = 1000) {
-    try {
-      console.log(`🔄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
-      const response = await axios.get(`${this.baseUrl}/klines`, {
-        params: { symbol, interval, limit },
-        timeout: 10000 // Increased timeout for reliability
-      });
-      
-      const data = response.data.map(kline => ({
-        timestamp: kline[0],
-        open: parseFloat(kline[1]),
-        high: parseFloat(kline[2]),
-        low: parseFloat(kline[3]),
-        close: parseFloat(kline[4]),
-        volume: parseFloat(kline[5])
-      }));
-      
-      console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
-      return data;
-    } catch (error) {
-      console.error(`❌ Error fetching historical data for ${symbol} ${interval}:`, error.message);
-      return [];
-    }
+  async getHistoricalData(symbol, interval = '1m', limit = 1000, startTime = null, endTime = null) {
+  try {
+    console.log(`📄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
+    
+    const params = { symbol, interval, limit };
+    
+    // Add time range if provided
+    if (startTime) params.startTime = startTime;
+    if (endTime) params.endTime = endTime;
+    
+    const response = await axios.get(`${this.baseUrl}/klines`, {
+      params,
+      timeout: 10000
+    });
+    
+    const data = response.data.map(kline => ({
+      timestamp: kline[0],
+      open: parseFloat(kline[1]),
+      high: parseFloat(kline[2]),
+      low: parseFloat(kline[3]),
+      close: parseFloat(kline[4]),
+      volume: parseFloat(kline[5])
+    }));
+    
+    console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Error fetching historical data for ${symbol} ${interval}:`, error.message);
+    return [];
   }
+}
 
   // ⭐ REMOVED: No longer need cache update method since we don't cache
 
