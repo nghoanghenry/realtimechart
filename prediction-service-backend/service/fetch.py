@@ -2,12 +2,11 @@ import requests
 import os
 
 
-def fetch_price(symbol: str) -> list[float]:
-    response = requests.get(f'{os.getenv('BINANCE_URL')}?symbol={symbol}&interval=1d&limit=24')
+def fetch_price(symbol: str, interval: str, limit: int) -> list[float]:
+    response = requests.get(f'{os.getenv('BINANCE_URL')}?symbol={symbol}&interval={interval}&limit={limit}')
     return response.json()
 
 
-def fetch_sentiment(symbol: str) -> list[float]:
-    response = requests.get(f'{os.getenv('SENTIMENT_URL')}?symbol={symbol}&limit=1024')
-    data = response.json()
-    return [data['sentiment'] for data in data]
+def fetch_sentiment(symbol: str, interval: str, limit: int) -> list[float]:
+    response = requests.get(f'{os.getenv('SENTIMENT_URL')}?symbol={symbol}&interval={interval}&limit={limit}')
+    return response.json()

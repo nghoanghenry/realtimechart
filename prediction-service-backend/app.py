@@ -2,10 +2,11 @@ from flask import Flask
 from dotenv import load_dotenv
 
 from routes import prediction_bp, model_bp
-from service import CryptoModel
+from service import CryptoModel, DataProcessor
 
 load_dotenv()
 CryptoModel()
+DataProcessor()
 
 app = Flask(__name__)
 app.register_blueprint(prediction_bp)
