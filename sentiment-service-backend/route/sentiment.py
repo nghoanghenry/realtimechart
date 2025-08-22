@@ -24,7 +24,7 @@ def sentiment():
 
 @sentiment_bp.route("/avg", methods=["GET"])
 def sentiment_avg():
-    symbol = request.args.get("symbol", "ETHUSDT", type=str)
+    symbol = request.args.get("symbol", None, type=str)
     interval = request.args.get("interval", "1d", type=str)
     limit = request.args.get("limit", 100, type=int)
     
@@ -51,7 +51,10 @@ def sentiment_avg():
         
         time_threshold -= delta
         print(f"Interval average: {avg}")
-        result.append(avg)
+        result.insert(0, avg)
+        
+    while len(result) < limit:
+        result.insert(0, 0.0)
     
     return result
     
