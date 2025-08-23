@@ -24,7 +24,7 @@ class DataProcessor:
         self.y_scaler.fit_transform(df[cols[3:]].values)
 
     def preprocess(self, price_data, sentiment_data) -> list[torch.Tensor]:
-        data = [[float(candle[1]), float(candle[5]), sentiment_score]
+        data = [[float(candle['open']), float(candle['volume']), sentiment_score]
                 for candle, sentiment_score in zip(price_data, sentiment_data)]
         scaled = self.X_scaler.transform(data)
         tensor = torch.tensor(scaled).float()
