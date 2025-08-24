@@ -3,7 +3,7 @@ import os
 from pymongo import MongoClient, DESCENDING
 
 client = MongoClient(os.getenv("MONGO_URI"))
-db = client["sentiment-service"]
+db = client[os.getenv("MONGO_DATABASE")]
 collection = db["sentiment"]
 
 

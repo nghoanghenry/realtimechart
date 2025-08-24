@@ -17,22 +17,22 @@ class RSSFetcher:
         for url in self.sources:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/115.0.0.0 Safari/537.36"
+                              "AppleWebKit/537.36 (KHTML, like Gecko) "
+                              "Chrome/115.0.0.0 Safari/537.36"
             }
             response = requests.get(url, headers=headers)
             feed = feedparser.parse(response.content)
-            print(f"[✔] Fetching {len(feed.entries)} entries from {url}")
+            print(f"[*] Fetching {len(feed.entries)} entries from {url}")
             for entry in feed.entries:
-                print(f"[+] Found entry: {entry.title} - {entry.link}")
+                print(f"[*] Found entry: {entry.title} - {entry.link}")
                 if entry.link not in self.seen_urls:
                     self.seen_urls.add(entry.link)
                     articles.append(
                         {
                             "title": entry.title,
                             "published": entry.published,
-                            "link": entry.links[0].href,
-                            "content": self.fetch_html(entry.links[0].href),
+                            "link": entry.link,
+                            "content": self.fetch_html(entry.link),
                         }
                     )
         return articles

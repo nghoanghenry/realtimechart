@@ -10,3 +10,5 @@ apscheduler~=3.11.0
 flask-cors~=6.0.1
 pytimeparse~=1.1.8
 python-dateutil~=2.9.0.post0
+transformers~=4.55.4
+torch~=2.8.0
