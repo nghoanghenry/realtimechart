@@ -10,7 +10,7 @@ prediction_bp = Blueprint('prediction', __name__, url_prefix='/predict')
 
 @prediction_bp.route('/', methods=['GET'])
 def predict():
-    seq_len = int(os.getenv('MODEL_SEQ_LEN'))
+    seq_len = int(os.getenv('MODEL_SEQ_LEN')) - 1
 
     symbol = request.args.get('symbol', 'BTCUSDT', type=str)
     interval = request.args.get('interval', '1h', type=str)
@@ -21,13 +21,14 @@ def predict():
     price_data = fetch_price(symbol, interval, limit, start_time, end_time)
     sentiment_data = fetch_sentiment(symbol, interval, limit, start_time, end_time)
 
-    data = [[float(candle['close']), float(candle['open']), float(candle['high']),
-            float(candle['low']), float(candle['volume']), sentiment_score]
-            for candle, sentiment_score in zip(price_data, sentiment_data)]
+    data = [[candle['open'], candle['high'], candle['low'], candle['volume'],
+             candle['quote_asset_volume'], candle['number_of_trade'],
+             candle['taker_buy_base_asset_volume'], candle['taker_buy_quote_asset_volume'],
+             sentiment_score, candle['close']] for candle, sentiment_score in zip(price_data, sentiment_data)]
     inputs = torch.tensor(data, dtype=torch.float32)
-    windows = list(inputs.unfold(0, seq_len + 1, 1).permute(0, 2, 1))
-    
-    model = CryptoModel()
-    outputs = [model.model(w).item() for w in windows]
 
-    return jsonify({'prediction': outputs})
+    model = CryptoModel().model
+    with torch.no_grad():
+        outputs = model(inputs).squeeze(1).tolist()
+
+    return jsonify({'prediction': outputs}), 200

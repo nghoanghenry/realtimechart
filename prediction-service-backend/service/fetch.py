@@ -6,7 +6,7 @@ def fetch_price(symbol: str, interval: str, limit: int, start_time: str, end_tim
     query = f'?interval={interval}&limit={limit}'
     if start_time: query += f'&startTime={start_time}'
     if end_time: query += f'&endTime={end_time}'
-    response = requests.get(f'{os.getenv('BINANCE_URL')}/{symbol}{query}')
+    response = requests.get(f'{os.getenv('PRICE_URL')}/{symbol}{query}')
     return response.json()
 
 
