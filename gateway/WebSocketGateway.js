@@ -7,7 +7,7 @@ class WebSocketGateway {
     this.io = new Server(server, { cors: { origin: '*' } });
     this.channel = null;
     this.subscribers = new Map(); // Track per-socket subscriptions
-    this.baseUrl = 'https://api.binance.com/api/v3'; // ⭐ Added for direct API calls
+    this.baseUrl = 'https://api.binance.com/api/v3';
     this.connectToRabbitMQ();
     this.setupSocketIO();
   }
@@ -31,6 +31,7 @@ class WebSocketGateway {
             const interval = parts[2];
             
             if (data && 'timestamp' in data) {
+              // ⭐ MODIFIED: Include all fields from real-time data
               const formattedData = {
                 symbol,
                 data: {
@@ -40,6 +41,11 @@ class WebSocketGateway {
                   low: data.low,
                   close: data.close,
                   volume: data.volume,
+                  close_time: data.close_time,
+                  quote_asset_volume: data.quote_asset_volume,
+                  number_of_trade: data.number_of_trade,
+                  taker_buy_base_asset_volume: data.taker_buy_base_asset_volume,
+                  taker_buy_quote_asset_volume: data.taker_buy_quote_asset_volume,
                   isClosed: data.isClosed
                 }
               };
@@ -58,7 +64,7 @@ class WebSocketGateway {
     }
   }
 
-  // ⭐ NEW: Fetch historical data directly from Binance API
+  // ⭐ MODIFIED: Include all fields in historical data response
   async getHistoricalData(symbol, interval = '1m', limit = 1000, startTime = null, endTime = null) {
     try {
       console.log(`🔄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
@@ -80,7 +86,12 @@ class WebSocketGateway {
         high: parseFloat(kline[2]),
         low: parseFloat(kline[3]),
         close: parseFloat(kline[4]),
-        volume: parseFloat(kline[5])
+        volume: parseFloat(kline[5]),
+        close_time: kline[6],
+        quote_asset_volume: parseFloat(kline[7]),
+        number_of_trade: parseInt(kline[8]),
+        taker_buy_base_asset_volume: parseFloat(kline[9]),
+        taker_buy_quote_asset_volume: parseFloat(kline[10])
       }));
             
       console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
@@ -122,7 +133,7 @@ class WebSocketGateway {
           // Add to socket's subscriptions
           socket.subscriptions.add(subscriptionKey);
           
-          // ⭐ MODIFIED: Fetch fresh historical data from Binance API
+          // ⭐ Fetch fresh historical data from Binance API with all fields
           const data = await this.getHistoricalData(symbol, interval);
           
           console.log(`📈 Sending ${data.length} fresh historical bars for ${symbol} ${interval}`);

@@ -9,7 +9,7 @@ class BinanceCollector {
     this.wsUrl = 'wss://stream.binance.com:9443/ws';
     this.rabbitConn = null;
     this.channel = null;
-    this.activeStreams = new Set(); // Track which streams are being used
+    this.activeStreams = new Set();
     this.connectToRabbitMQ();
   }
 
@@ -25,40 +25,42 @@ class BinanceCollector {
     }
   }
 
-  // ⭐ MODIFIED: Always fetch from Binance API, no caching
+  // ⭐ MODIFIED: Add all required fields from Binance API
   async getHistoricalData(symbol, interval = '1m', limit = 1000, startTime = null, endTime = null) {
-  try {
-    console.log(`📄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
-    
-    const params = { symbol, interval, limit };
-    
-    // Add time range if provided
-    if (startTime) params.startTime = startTime;
-    if (endTime) params.endTime = endTime;
-    
-    const response = await axios.get(`${this.baseUrl}/klines`, {
-      params,
-      timeout: 10000
-    });
-    
-    const data = response.data.map(kline => ({
-      timestamp: kline[0],
-      open: parseFloat(kline[1]),
-      high: parseFloat(kline[2]),
-      low: parseFloat(kline[3]),
-      close: parseFloat(kline[4]),
-      volume: parseFloat(kline[5])
-    }));
-    
-    console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
-    return data;
-  } catch (error) {
-    console.error(`❌ Error fetching historical data for ${symbol} ${interval}:`, error.message);
-    return [];
+    try {
+      console.log(`📄 Fetching fresh historical data for ${symbol} ${interval} (limit: ${limit})`);
+      
+      const params = { symbol, interval, limit };
+      
+      if (startTime) params.startTime = startTime;
+      if (endTime) params.endTime = endTime;
+      
+      const response = await axios.get(`${this.baseUrl}/klines`, {
+        params,
+        timeout: 10000
+      });
+      
+      const data = response.data.map(kline => ({
+        timestamp: kline[0],
+        open: parseFloat(kline[1]),
+        high: parseFloat(kline[2]),
+        low: parseFloat(kline[3]),
+        close: parseFloat(kline[4]),
+        volume: parseFloat(kline[5]),
+        close_time: kline[6],
+        quote_asset_volume: parseFloat(kline[7]),
+        number_of_trade: parseInt(kline[8]),
+        taker_buy_base_asset_volume: parseFloat(kline[9]),
+        taker_buy_quote_asset_volume: parseFloat(kline[10])
+      }));
+      
+      console.log(`📈 Retrieved ${data.length} fresh bars for ${symbol} ${interval}`);
+      return data;
+    } catch (error) {
+      console.error(`❌ Error fetching historical data for ${symbol} ${interval}:`, error.message);
+      return [];
+    }
   }
-}
-
-  // ⭐ REMOVED: No longer need cache update method since we don't cache
 
   createBinanceConnection(streamName) {
     const ws = new WebSocket(`${this.wsUrl}/${streamName}`);
@@ -75,6 +77,7 @@ class BinanceCollector {
         }
         if (parsed.k) {
           const kline = parsed.k;
+          // ⭐ MODIFIED: Add all required fields from WebSocket stream
           const klineData = {
             timestamp: kline.t,
             open: parseFloat(kline.o),
@@ -82,10 +85,14 @@ class BinanceCollector {
             low: parseFloat(kline.l),
             close: parseFloat(kline.c),
             volume: parseFloat(kline.v),
+            close_time: kline.T,
+            quote_asset_volume: parseFloat(kline.q),
+            number_of_trade: parseInt(kline.n),
+            taker_buy_base_asset_volume: parseFloat(kline.V),
+            taker_buy_quote_asset_volume: parseFloat(kline.Q),
             isClosed: kline.x
           };
 
-          // ⭐ SIMPLIFIED: Only publish to RabbitMQ, no cache updates
           if (this.channel) {
             const [symbol, interval] = streamName.split('@');
             const routingKey = `${symbol.toUpperCase()}.kline.${interval.replace('kline_', '')}`;
@@ -100,7 +107,6 @@ class BinanceCollector {
     ws.on('close', () => {
       console.log(`Disconnected from Binance stream: ${streamName}`);
       this.connections.delete(streamName);
-      // Only reconnect if stream is still actively needed
       if (this.activeStreams.has(streamName)) {
         setTimeout(() => this.createBinanceConnection(streamName), 5000);
       }
@@ -115,7 +121,7 @@ class BinanceCollector {
 
   subscribeToStream(symbol, interval) {
     const streamName = `${symbol.toLowerCase()}@kline_${interval}`;
-    this.activeStreams.add(streamName); // Mark as actively needed
+    this.activeStreams.add(streamName);
     
     if (!this.connections.has(streamName)) {
       console.log(`🚀 Subscribing to ${streamName}`);
@@ -127,7 +133,6 @@ class BinanceCollector {
     const streamName = `${symbol.toLowerCase()}@kline_${interval}`;
     this.activeStreams.delete(streamName);
     
-    // Close connection if no longer needed
     const ws = this.connections.get(streamName);
     if (ws) {
       ws.close();
