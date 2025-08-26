@@ -22,7 +22,7 @@ export default function NewsBlock({
   return (
     <a
       href={link}
-      className="news-block rounded-lg p-2 border-gray-200 border-2"
+      className="news-block rounded-lg p-2 border-gray-200 border-2 shadow-md hover:shadow-sm transition-shadow"
     >
       <div className="flex flex-row-reverse w-full">
         {parseFloat(sentiment) > 0 ? (

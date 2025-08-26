@@ -33,19 +33,23 @@ export default function SentimentNews() {
     fetchNews();
   }, []);
   return (
-    <div className="rounded-lg shadow-lg p-4 row-start-1 w-[30rem] h-auto flex flex-col gap-4">
-      {news.map((item) => (
-        <NewsBlock
-          coin={item.symbol}
-          title={item.title}
-          content={item.content}
-          link={item.link}
-          sentiment={item.sentiment}
-          uploadDate={item.published}
-          reason={item.reason}
-          key={item._id}
-        />
-      ))}
+    <div className="row-start-1 w-full max-w-[30rem] h-auto flex flex-col gap-4">
+      {news.length ? (
+        news.map((item) => (
+          <NewsBlock
+            coin={item.symbol}
+            title={item.title}
+            content={item.content}
+            link={item.link}
+            sentiment={item.sentiment}
+            uploadDate={item.published}
+            reason={item.reason}
+            key={item._id}
+          />
+        ))
+      ) : (
+        <div>Loading news...</div>
+      )}
     </div>
   );
 }
