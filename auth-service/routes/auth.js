@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { User } = require('../models');
+const UserRepository = require('../repositories/UserRepository');
 const { generateToken } = require('../middleware/auth');
 const { validateRegister, validateLogin } = require('../utils/validation');
 
@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
     const { username, email, password, role } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({
+    const existingUser = await UserRepository.findOne({
       $or: [{ email }, { username }]
     });
 
@@ -41,14 +41,12 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
-    const user = new User({
+    const user = await UserRepository.create({
       username,
       email,
       password: hashedPassword,
       role: role || 'user'
     });
-
-    await user.save();
 
     // Generate token
     const token = generateToken(user._id);
@@ -95,7 +93,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await UserRepository.findByEmail(email);
     if (!user) {
       return res.status(400).json({
         success: false,

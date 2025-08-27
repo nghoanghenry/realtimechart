@@ -1,6 +1,8 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/auth');
-const { User, Payment, QRConfig } = require('../models');
+const UserRepository = require('../repositories/UserRepository');
+const PaymentRepository = require('../repositories/PaymentRepository');
+const QRConfigRepository = require('../repositories/QRConfigRepository');
 const router = express.Router();
 
 // Admin middleware to check admin role
@@ -27,7 +29,7 @@ const adminAuth = async (req, res, next) => {
 router.get('/qr-config', verifyToken, async (req, res) => {
   try {
     // Find the QR config (should only be one)
-    const config = await QRConfig.findOne({});
+    const config = await QRConfigRepository.findOne({});
     
     if (!config) {
       // Don't create anything, just return null
@@ -74,25 +76,25 @@ router.post('/qr-config', adminAuth, async (req, res) => {
     }
 
     // Always find existing config first
-    let config = await QRConfig.findOne({});
+    let config = await QRConfigRepository.findOne({});
     
     if (config) {
       // Update existing config (overwrite)
-      config.bankId = bankId;
-      config.accountNo = accountNo;
-      config.template = template;
-      config.accountName = accountName;
-      config.monthlyAmount = parseInt(monthlyAmount);
-      config.yearlyAmount = parseInt(yearlyAmount);
-      config.lastUpdatedBy = req.user._id;
-      config.updatedAt = new Date();
-      config.isActive = true;
-      
-      await config.save();
+      await QRConfigRepository.updateById(config._id, {
+        bankId,
+        accountNo,
+        template,
+        accountName,
+        monthlyAmount: parseInt(monthlyAmount),
+        yearlyAmount: parseInt(yearlyAmount),
+        lastUpdatedBy: req.user._id,
+        updatedAt: new Date(),
+        isActive: true
+      });
       console.log('QR Config updated (overwritten):', config._id);
     } else {
       // Create new config only if none exists
-      config = new QRConfig({
+      config = await QRConfigRepository.create({
         bankId,
         accountNo,
         template,
@@ -103,8 +105,6 @@ router.post('/qr-config', adminAuth, async (req, res) => {
         lastUpdatedBy: req.user._id,
         isActive: true
       });
-      
-      await config.save();
       console.log('QR Config created (first time):', config._id);
     }
 
@@ -134,10 +134,7 @@ router.post('/qr-config', adminAuth, async (req, res) => {
 // Get pending payments
 router.get('/pending-payments', adminAuth, async (req, res) => {
   try {
-    const payments = await Payment.find({ status: 'pending' })
-      .populate('userId', 'username email')
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const payments = await PaymentRepository.findAll({ status: 'pending' });
 
     res.json({
       success: true,
@@ -158,7 +155,7 @@ router.post('/approve-payment/:paymentId', adminAuth, async (req, res) => {
     const { paymentId } = req.params;
 
     // Find payment
-    const payment = await Payment.findById(paymentId).populate('userId');
+    const payment = await PaymentRepository.findById(paymentId);
     if (!payment) {
       return res.status(404).json({
         success: false,
@@ -174,23 +171,27 @@ router.post('/approve-payment/:paymentId', adminAuth, async (req, res) => {
     }
 
     // Update payment status
-    payment.status = 'completed';
-    payment.completedAt = new Date();
-    await payment.save();
+    await PaymentRepository.updateById(payment._id, {
+      status: 'completed',
+      completedAt: new Date()
+    });
 
     // Upgrade user to VIP
-    const user = await User.findById(payment.userId._id);
-    user.role = 'vip';
+    const user = await UserRepository.findById(payment.userId._id);
     
     // Set VIP expiry date based on plan
     const plan = payment.metadata?.plan;
+    let vipExpiry;
     if (plan === 'monthly') {
-      user.vipExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      vipExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     } else if (plan === 'yearly') {
-      user.vipExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
+      vipExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
     }
     
-    await user.save();
+    await UserRepository.updateById(user._id, {
+      role: 'vip',
+      vipExpiry: vipExpiry
+    });
 
     console.log(`Admin approved payment ${paymentId}, user ${user.username} upgraded to VIP`);
 
@@ -222,7 +223,7 @@ router.post('/reject-payment/:paymentId', adminAuth, async (req, res) => {
     const { paymentId } = req.params;
 
     // Find payment
-    const payment = await Payment.findById(paymentId);
+    const payment = await PaymentRepository.findById(paymentId);
     if (!payment) {
       return res.status(404).json({
         success: false,
@@ -238,9 +239,10 @@ router.post('/reject-payment/:paymentId', adminAuth, async (req, res) => {
     }
 
     // Update payment status
-    payment.status = 'failed';
-    payment.rejectedAt = new Date();
-    await payment.save();
+    await PaymentRepository.updateById(payment._id, {
+      status: 'failed',
+      rejectedAt: new Date()
+    });
 
     console.log(`Admin rejected payment ${paymentId}`);
 
@@ -264,13 +266,9 @@ router.get('/all-payments', adminAuth, async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const payments = await Payment.find({})
-      .populate('userId', 'username email role')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const payments = await PaymentRepository.findAll({});
 
-    const total = await Payment.countDocuments({});
+    const total = await PaymentRepository.countDocuments({});
 
     res.json({
       success: true,
@@ -294,10 +292,10 @@ router.get('/all-payments', adminAuth, async (req, res) => {
 // Get admin dashboard stats
 router.get('/stats', adminAuth, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments({});
-    const vipUsers = await User.countDocuments({ role: 'vip' });
-    const pendingPayments = await Payment.countDocuments({ status: 'pending' });
-    const completedPayments = await Payment.countDocuments({ status: 'completed' });
+    const totalUsers = await UserRepository.countDocuments({});
+    const vipUsers = await UserRepository.countDocuments({ role: 'vip' });
+    const pendingPayments = await PaymentRepository.countDocuments({ status: 'pending' });
+    const completedPayments = await PaymentRepository.countDocuments({ status: 'completed' });
     
     // Revenue calculation
     const revenueResult = await Payment.aggregate([

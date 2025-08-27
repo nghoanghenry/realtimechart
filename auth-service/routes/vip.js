@@ -1,6 +1,8 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/auth');
-const { User, Payment, QRConfig } = require('../models');
+const UserRepository = require('../repositories/UserRepository');
+const PaymentRepository = require('../repositories/PaymentRepository');
+const QRConfigRepository = require('../repositories/QRConfigRepository');
 const router = express.Router();
 
 // Generate QR payment info (not create payment record yet)
@@ -54,12 +56,8 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
     }
 
     // Check if payment already exists
-    const existingPayment = await Payment.findOne({ 
-      $or: [
-        { _id: paymentId },
-        { 'metadata.paymentId': paymentId }
-      ]
-    });
+    const existingPayments = await PaymentRepository.findAll({ 'metadata.paymentId': paymentId });
+    const existingPayment = existingPayments[0];
 
     if (existingPayment) {
       return res.status(400).json({
@@ -69,7 +67,7 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
     }
 
     // Create payment record now
-    const payment = new Payment({
+    const payment = await PaymentRepository.create({
       userId: req.user._id,
       amount: parseInt(amount),
       currency: currency || 'VND',
@@ -82,8 +80,6 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
         paymentId: paymentId
       }
     });
-
-    await payment.save();
 
     console.log(`User ${req.user.username} confirmed payment for ${plan} plan`);
 
@@ -115,7 +111,7 @@ router.post('/complete-vip-payment/:paymentId', verifyToken, async (req, res) =>
     const { paymentId } = req.params;
     
     // Find payment
-    const payment = await Payment.findById(paymentId);
+    const payment = await PaymentRepository.findById(paymentId);
     if (!payment) {
       return res.status(404).json({ 
         success: false, 
@@ -132,23 +128,27 @@ router.post('/complete-vip-payment/:paymentId', verifyToken, async (req, res) =>
     }
 
     // Update payment status
-    payment.status = 'completed';
-    payment.completedAt = new Date();
-    await payment.save();
+    await PaymentRepository.updateById(payment._id, {
+      status: 'completed',
+      completedAt: new Date()
+    });
 
     // Upgrade user to VIP
-    const user = await User.findById(req.user._id);
-    user.role = 'vip';
+    const user = await UserRepository.findById(req.user._id);
     
     // Set VIP expiry date based on plan
     const plan = payment.metadata?.plan;
+    let vipExpiry;
     if (plan === 'monthly') {
-      user.vipExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      vipExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     } else if (plan === 'yearly') {
-      user.vipExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
+      vipExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
     }
     
-    await user.save();
+    await UserRepository.updateById(user._id, {
+      role: 'vip',
+      vipExpiry: vipExpiry
+    });
 
     res.json({
       success: true,
@@ -174,9 +174,7 @@ router.post('/complete-vip-payment/:paymentId', verifyToken, async (req, res) =>
 // Get user's payment history
 router.get('/payment-history', verifyToken, async (req, res) => {
   try {
-    const payments = await Payment.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(10);
+    const payments = await PaymentRepository.findAll({ userId: req.user._id });
 
     res.json({
       success: true,
@@ -195,15 +193,14 @@ router.get('/payment-history', verifyToken, async (req, res) => {
 // Check VIP status
 router.get('/vip-status', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await UserRepository.findById(req.user._id);
     
     const isVip = user.role === 'vip';
     const isExpired = isVip && user.vipExpiry && new Date() > user.vipExpiry;
     
     // Auto-downgrade if VIP expired
     if (isExpired) {
-      user.role = 'user';
-      await user.save();
+      await UserRepository.updateById(user._id, { role: 'user' });
     }
 
     res.json({
@@ -228,7 +225,7 @@ router.get('/vip-status', verifyToken, async (req, res) => {
 // Get QR configuration for VIP payments
 router.get('/qr-config', verifyToken, async (req, res) => {
   try {
-    let config = await QRConfig.findOne({});
+    let config = await QRConfigRepository.findOne({});
     
     if (!config) {
       // Return default values for VIP users (they need pricing to work)

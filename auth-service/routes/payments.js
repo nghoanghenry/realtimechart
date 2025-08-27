@@ -1,5 +1,5 @@
 const express = require('express');
-const { Payment } = require('../models');
+const PaymentRepository = require('../repositories/PaymentRepository');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { validatePayment } = require('../utils/validation');
 
@@ -22,15 +22,13 @@ router.post('/', verifyToken, async (req, res) => {
     const { amount, description } = req.body;
 
     // Create payment
-    const payment = new Payment({
+    const payment = await PaymentRepository.create({
       userId: req.user._id,
       amount,
       description,
       transactionId: `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       status: 'pending'
     });
-
-    await payment.save();
 
     // Populate user info
     await payment.populate('userId', 'username email');
@@ -59,12 +57,9 @@ router.get('/', verifyToken, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const payments = await Payment.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const payments = await PaymentRepository.findAll({ userId: req.user._id });
 
-    const total = await Payment.countDocuments({ userId: req.user._id });
+    const total = await PaymentRepository.countDocuments({ userId: req.user._id });
 
     res.json({
       success: true,
@@ -93,13 +88,9 @@ router.get('/all', verifyToken, requireAdmin, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const payments = await Payment.find()
-      .populate('userId', 'username email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const payments = await PaymentRepository.findAll();
 
-    const total = await Payment.countDocuments();
+    const total = await PaymentRepository.countDocuments();
 
     res.json({
       success: true,
@@ -133,11 +124,11 @@ router.put('/:id/status', verifyToken, requireAdmin, async (req, res) => {
       });
     }
 
-    const payment = await Payment.findByIdAndUpdate(
+    const payment = await PaymentRepository.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true }
-    ).populate('userId', 'username email');
+    );
 
     if (!payment) {
       return res.status(404).json({
