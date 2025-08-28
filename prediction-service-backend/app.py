@@ -12,10 +12,10 @@ app.register_blueprint(prediction_bp)
 app.register_blueprint(model_bp)
 
 
-@app.route('/')
+@app.route("/")
 def home():
-    return 'Prediction service is listening...'
+    return "Prediction service is listening..."
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(port=5001)

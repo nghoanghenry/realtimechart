@@ -46,13 +46,17 @@ def sentiment_avg():
 
     delta = datetime.timedelta(seconds=interval_seconds)
     if endTime is not None:
-        endMark = datetime.datetime.fromtimestamp(float(endTime) / 1000, datetime.timezone.utc)
+        endMark = datetime.datetime.fromtimestamp(
+            float(endTime) / 1000, datetime.timezone.utc
+        )
     else:
         endMark = datetime.datetime.now(datetime.timezone.utc)
     time_threshold = endMark - delta
 
     if startTime is not None:
-        startMark = datetime.datetime.fromtimestamp(float(startTime) / 1000, datetime.timezone.utc)
+        startMark = datetime.datetime.fromtimestamp(
+            float(startTime) / 1000, datetime.timezone.utc
+        )
     else:
         startMark = None
 
