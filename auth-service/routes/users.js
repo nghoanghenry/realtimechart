@@ -1,5 +1,5 @@
 const express = require('express');
-const UserRepository = require('../repositories/UserRepository');
+const container = require('../services/Container');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -9,18 +9,9 @@ const router = express.Router();
 // @access  Private
 router.get('/profile', verifyToken, async (req, res) => {
   try {
-    const user = {
-      _id: req.user._id,
-      username: req.user.username,
-      email: req.user.email,
-      role: req.user.role,
-      createdAt: req.user.createdAt
-    };
+    const result = await container.get('userService').getUserProfile(req.user._id);
 
-    res.json({
-      success: true,
-      user
-    });
+    res.json(result);
   } catch (error) {
     console.error('Profile fetch error:', error);
     res.status(500).json({
@@ -37,21 +28,10 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
 
-    const users = await UserRepository.findAll();
+    const result = await container.get('userService').getAllUsers({ page, limit });
 
-    const total = await UserRepository.countDocuments();
-
-    res.json({
-      success: true,
-      users,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.error('Users fetch error:', error);
     res.status(500).json({

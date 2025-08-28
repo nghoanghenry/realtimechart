@@ -26,4 +26,4 @@ class QRConfigRepository {
   }
 }
 
-module.exports = new QRConfigRepository();
+module.exports = QRConfigRepository;

@@ -30,4 +30,4 @@ class PaymentRepository {
   }
 }
 
-module.exports = new PaymentRepository();
+module.exports = PaymentRepository;

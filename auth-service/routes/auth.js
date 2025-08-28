@@ -1,7 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const UserRepository = require('../repositories/UserRepository');
-const { generateToken } = require('../middleware/auth');
+const container = require('../services/Container');
 const { validateRegister, validateLogin } = require('../utils/validation');
 
 const router = express.Router();
@@ -11,64 +9,22 @@ const router = express.Router();
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    // Validate input
-    const { error } = validateRegister(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message
-      });
-    }
+    const result = await container.get('authService').registerUser(req.body);
 
-    const { username, email, password, role } = req.body;
-
-    // Check if user already exists
-    const existingUser = await UserRepository.findOne({
-      $or: [{ email }, { username }]
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: existingUser.email === email 
-          ? 'Email already registered' 
-          : 'Username already taken'
-      });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const user = await UserRepository.create({
-      username,
-      email,
-      password: hashedPassword,
-      role: role || 'user'
-    });
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    // Return user data (without password)
-    const userData = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt
-    };
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      token,
-      user: userData
-    });
+    res.status(201).json(result);
 
   } catch (error) {
     console.error('Registration error:', error);
+
+    // Return specific error messages for validation errors
+    if (error.message.includes('already') || error.message.includes('required') || error.message.includes('invalid')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    // Return generic server error for unexpected errors
     res.status(500).json({
       success: false,
       message: 'Server error during registration'
@@ -81,56 +37,22 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
-    // Validate input
-    const { error } = validateLogin(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message
-      });
-    }
+    const result = await container.get('authService').loginUser(req.body);
 
-    const { email, password } = req.body;
-
-    // Check if user exists
-    const user = await UserRepository.findByEmail(email);
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    // Return user data (without password)
-    const userData = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt
-    };
-
-    res.json({
-      success: true,
-      message: 'Login successful',
-      token,
-      user: userData
-    });
+    res.json(result);
 
   } catch (error) {
     console.error('Login error:', error);
+
+    // Return specific error messages for authentication errors
+    if (error.message.includes('Invalid email or password') || error.message.includes('required') || error.message.includes('invalid')) {
+      return res.status(401).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    // Return generic server error for unexpected errors
     res.status(500).json({
       success: false,
       message: 'Server error during login'

@@ -1,8 +1,7 @@
 const express = require('express');
+const container = require('../services/Container');
 const { verifyToken } = require('../middleware/auth');
-const UserRepository = require('../repositories/UserRepository');
-const PaymentRepository = require('../repositories/PaymentRepository');
-const QRConfigRepository = require('../repositories/QRConfigRepository');
+
 const router = express.Router();
 
 // Admin middleware to check admin role
@@ -28,31 +27,9 @@ const adminAuth = async (req, res, next) => {
 // Get QR Configuration (accessible to all authenticated users)
 router.get('/qr-config', verifyToken, async (req, res) => {
   try {
-    // Find the QR config (should only be one)
-    const config = await QRConfigRepository.findOne({});
-    
-    if (!config) {
-      // Don't create anything, just return null
-      return res.json({
-        success: true,
-        config: null,
-        isDefault: false,
-        message: 'No QR configuration found. Admin needs to set up payment config first.'
-      });
-    }
+    const result = await container.get('adminService').getQrConfig();
 
-    res.json({
-      success: true,
-      config: {
-        bankId: config.bankId,
-        accountNo: config.accountNo,
-        template: config.template,
-        accountName: config.accountName,
-        monthlyAmount: config.monthlyAmount,
-        yearlyAmount: config.yearlyAmount
-      },
-      isDefault: false
-    });
+    res.json(result);
   } catch (error) {
     console.error('Get QR config error:', error);
     res.status(500).json({
@@ -65,63 +42,9 @@ router.get('/qr-config', verifyToken, async (req, res) => {
 // Update QR Config (admin only)
 router.post('/qr-config', adminAuth, async (req, res) => {
   try {
-    const { bankId, accountNo, template, accountName, monthlyAmount, yearlyAmount } = req.body;
+    const result = await container.get('adminService').updateQrConfig(req.user._id, req.body);
 
-    // Validate required fields
-    if (!bankId || !accountNo || !template || !accountName || !monthlyAmount || !yearlyAmount) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required'
-      });
-    }
-
-    // Always find existing config first
-    let config = await QRConfigRepository.findOne({});
-    
-    if (config) {
-      // Update existing config (overwrite)
-      await QRConfigRepository.updateById(config._id, {
-        bankId,
-        accountNo,
-        template,
-        accountName,
-        monthlyAmount: parseInt(monthlyAmount),
-        yearlyAmount: parseInt(yearlyAmount),
-        lastUpdatedBy: req.user._id,
-        updatedAt: new Date(),
-        isActive: true
-      });
-      console.log('QR Config updated (overwritten):', config._id);
-    } else {
-      // Create new config only if none exists
-      config = await QRConfigRepository.create({
-        bankId,
-        accountNo,
-        template,
-        accountName,
-        monthlyAmount: parseInt(monthlyAmount),
-        yearlyAmount: parseInt(yearlyAmount),
-        createdBy: req.user._id,
-        lastUpdatedBy: req.user._id,
-        isActive: true
-      });
-      console.log('QR Config created (first time):', config._id);
-    }
-
-    res.json({
-      success: true,
-      message: config.createdAt.getTime() === config.updatedAt.getTime() 
-        ? 'QR configuration created successfully' 
-        : 'QR configuration updated successfully',
-      config: {
-        bankId: config.bankId,
-        accountNo: config.accountNo,
-        template: config.template,
-        accountName: config.accountName,
-        monthlyAmount: config.monthlyAmount,
-        yearlyAmount: config.yearlyAmount
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.error('Save QR config error:', error);
     res.status(500).json({
@@ -134,12 +57,9 @@ router.post('/qr-config', adminAuth, async (req, res) => {
 // Get pending payments
 router.get('/pending-payments', adminAuth, async (req, res) => {
   try {
-    const payments = await PaymentRepository.findAll({ status: 'pending' });
+    const result = await container.get('adminService').getPendingPayments();
 
-    res.json({
-      success: true,
-      payments
-    });
+    res.json(result);
   } catch (error) {
     console.error('Pending payments error:', error);
     res.status(500).json({
@@ -152,62 +72,9 @@ router.get('/pending-payments', adminAuth, async (req, res) => {
 // Approve payment
 router.post('/approve-payment/:paymentId', adminAuth, async (req, res) => {
   try {
-    const { paymentId } = req.params;
+    const result = await container.get('adminService').approvePayment(req.params.paymentId);
 
-    // Find payment
-    const payment = await PaymentRepository.findById(paymentId);
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found'
-      });
-    }
-
-    if (payment.status !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment is not pending'
-      });
-    }
-
-    // Update payment status
-    await PaymentRepository.updateById(payment._id, {
-      status: 'completed',
-      completedAt: new Date()
-    });
-
-    // Upgrade user to VIP
-    const user = await UserRepository.findById(payment.userId._id);
-    
-    // Set VIP expiry date based on plan
-    const plan = payment.metadata?.plan;
-    let vipExpiry;
-    if (plan === 'monthly') {
-      vipExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-    } else if (plan === 'yearly') {
-      vipExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
-    }
-    
-    await UserRepository.updateById(user._id, {
-      role: 'vip',
-      vipExpiry: vipExpiry
-    });
-
-    console.log(`Admin approved payment ${paymentId}, user ${user.username} upgraded to VIP`);
-
-    res.json({
-      success: true,
-      message: 'Payment approved and user upgraded to VIP successfully',
-      payment: {
-        id: payment._id,
-        status: payment.status,
-        user: {
-          username: user.username,
-          role: user.role,
-          vipExpiry: user.vipExpiry
-        }
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.error('Approve payment error:', error);
     res.status(500).json({
@@ -220,36 +87,9 @@ router.post('/approve-payment/:paymentId', adminAuth, async (req, res) => {
 // Reject payment
 router.post('/reject-payment/:paymentId', adminAuth, async (req, res) => {
   try {
-    const { paymentId } = req.params;
+    const result = await container.get('adminService').rejectPayment(req.params.paymentId);
 
-    // Find payment
-    const payment = await PaymentRepository.findById(paymentId);
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found'
-      });
-    }
-
-    if (payment.status !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment is not pending'
-      });
-    }
-
-    // Update payment status
-    await PaymentRepository.updateById(payment._id, {
-      status: 'failed',
-      rejectedAt: new Date()
-    });
-
-    console.log(`Admin rejected payment ${paymentId}`);
-
-    res.json({
-      success: true,
-      message: 'Payment rejected successfully'
-    });
+    res.json(result);
   } catch (error) {
     console.error('Reject payment error:', error);
     res.status(500).json({
@@ -264,22 +104,10 @@ router.get('/all-payments', adminAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
 
-    const payments = await PaymentRepository.findAll({});
+    const result = await container.get('adminService').getAllPayments({ page, limit });
 
-    const total = await PaymentRepository.countDocuments({});
-
-    res.json({
-      success: true,
-      payments,
-      pagination: {
-        current: page,
-        total: Math.ceil(total / limit),
-        count: payments.length,
-        totalRecords: total
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.error('All payments error:', error);
     res.status(500).json({
@@ -292,30 +120,9 @@ router.get('/all-payments', adminAuth, async (req, res) => {
 // Get admin dashboard stats
 router.get('/stats', adminAuth, async (req, res) => {
   try {
-    const totalUsers = await UserRepository.countDocuments({});
-    const vipUsers = await UserRepository.countDocuments({ role: 'vip' });
-    const pendingPayments = await PaymentRepository.countDocuments({ status: 'pending' });
-    const completedPayments = await PaymentRepository.countDocuments({ status: 'completed' });
-    
-    // Revenue calculation
-    const revenueResult = await Payment.aggregate([
-      { $match: { status: 'completed' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+    const result = await container.get('adminService').getAdminStats();
 
-    res.json({
-      success: true,
-      stats: {
-        totalUsers,
-        vipUsers,
-        freeUsers: totalUsers - vipUsers,
-        pendingPayments,
-        completedPayments,
-        totalRevenue,
-        conversionRate: totalUsers > 0 ? ((vipUsers / totalUsers) * 100).toFixed(2) : 0
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.error('Admin stats error:', error);
     res.status(500).json({
