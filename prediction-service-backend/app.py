@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 from routes import prediction_bp, model_bp
@@ -8,6 +9,7 @@ load_dotenv()
 CryptoModel()
 
 app = Flask(__name__)
+CORS(app)
 app.register_blueprint(prediction_bp)
 app.register_blueprint(model_bp)
 

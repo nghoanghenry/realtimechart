@@ -42,4 +42,9 @@ def predict():
     with torch.no_grad():
         outputs = model(inputs).squeeze(1).tolist()
 
-    return jsonify({"prediction": outputs}), 200
+    return jsonify(
+        {
+            "prediction": outputs,
+            "model_name": "prediction-service-backend\model\model.pt",
+        }
+    ), 200
