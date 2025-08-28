@@ -1,4 +1,5 @@
 import { Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { format } from "timeago.js";
 
 interface NewsSidebarProps {
   coin: string;
@@ -33,9 +34,7 @@ export default function NewsBlock({
           <Minus color="gray" size={18} />
         )}
       </div>
-      <h3 className="font-medium line-clamp-2 text-ellipsis">
-        {title}
-      </h3>
+      <h3 className="font-medium line-clamp-2 text-ellipsis">{title}</h3>
 
       <p className="text-xs text-gray-500 line-clamp-3 text-ellipsis mt-1">
         {reason}
@@ -44,7 +43,7 @@ export default function NewsBlock({
       <div className="extra flex justify-between align-middle pt-2">
         <span className="text-gray-500 text-xs flex items-center gap-1">
           <Clock size={14} />
-          {uploadDate}
+          {format(uploadDate)}
           {/* 15 minutes ago */}
         </span>
 
