@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
@@ -39,18 +38,13 @@ const limiter = rateLimit({
 // Auth routes rate limiting (more strict)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 login/register attempts per windowMs
+  max: 10, // limit each IP to 5 login/register attempts per windowMs
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'
   }
 });
 
-// CORS configuration
-app.use(cors({
-  origin: "*",
-  credentials: false
-}));
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
