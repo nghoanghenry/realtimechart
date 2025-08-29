@@ -49,7 +49,7 @@ const authLimiter = rateLimit({
 // CORS configuration
 app.use(cors({
   origin: "*",
-  credentials: true
+  credentials: false
 }));
 
 // Body parser middleware
