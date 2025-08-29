@@ -58,6 +58,24 @@ services:
     networks:
       - default
 
+  # prediction-service:
+  #   build: ./prediction-service-backend
+  #   ports:
+  #     - "5001:5001"
+  #   volumes:
+  #     - ./prediction-service-backend:/app
+  #   env_file:
+  #     - ./prediction-service-backend/.env.example
+
+  # sentiment-service:
+  #   build: ./sentiment-service-backend
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - ./sentiment-service-backend:/app
+  #   env_file:
+  #     - ./sentiment-service-backend/.env.example
+
 networks:
   default:
     driver: bridge
