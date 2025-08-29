@@ -53,9 +53,9 @@ export default function Header() {
     <header className="bg-white/30 backdrop-blur-md shadow-lg sticky top-0 z-50">
       <div className="relative max-w-full mx-auto px-6 flex justify-between items-center min-h-[50px]">
         <div className="flex-shrink-0">
-          <h1 className="m-0 text-black text-2xl font-bold tracking-tight drop-shadow-sm">
+          <div className="m-0 text-black text-2xl font-bold tracking-tight drop-shadow-sm">
             TradeX
-          </h1>
+          </div>
         </div>
 
         <nav className="flex items-center gap-6 flex-1 justify-end">
