@@ -1,14 +1,20 @@
 import { Brain, TrendingUp, TrendingDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function PredictionBlock() {
+interface PredictionBlockProps {
+  symbol: string | undefined;
+}
+
+export default function PredictionBlock({
+  symbol = "BTCUSDT",
+}: PredictionBlockProps) {
   const [prediction, setPrediction] = useState<number | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   useEffect(() => {
     const fetchPrediction = async () => {
       try {
         const result = await fetch(
-          "http://localhost:5001/predict/?symbol=BTCUSDT&interval=1h&limit=1"
+          `http://localhost:5001/predict/?symbol=${symbol}&interval=1h&limit=1`
         );
 
         if (!result.ok) {
@@ -27,7 +33,7 @@ export default function PredictionBlock() {
     const fetchCurrentPrice = async () => {
       try {
         const result = await fetch(
-          "http://localhost/api/history/BTCUSDT?interval=1h&limit=1"
+          `http://localhost/api/history/${symbol}?interval=1h&limit=1`
         );
 
         if (!result.ok) {
@@ -44,7 +50,9 @@ export default function PredictionBlock() {
 
     fetchPrediction();
     fetchCurrentPrice();
-  }, []);
+    
+    console.log("🧋Fetching prediction and current price for symbol:", symbol);
+  }, [symbol]);
 
   const formatter = Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,

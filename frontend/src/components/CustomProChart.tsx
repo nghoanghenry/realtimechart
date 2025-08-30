@@ -30,6 +30,12 @@ class BinanceDatafeed {
   private callback: DatafeedSubscribeCallback | null = null;
   private currentSymbol: string = '';
   private currentInterval: string = '1m';
+  private symbolCallback: ((symbol: string) => void) | undefined = undefined;
+  
+  constructor(symbolCallback?: (symbol: string) => void) {
+    this.symbolCallback = symbolCallback;
+  }
+
 
   searchSymbols(search?: string): Promise<SymbolInfo[]> {
     return fetch('http://localhost/api/symbols')
@@ -44,6 +50,7 @@ class BinanceDatafeed {
     try {
       const interval = this.periodToInterval(period);
       console.log(`📈 Fetching historical data for ${symbol.ticker} ${interval}`);
+      this.symbolCallback?.(symbol.ticker);
       
       const response = await fetch(
         `http://localhost/api/history/${symbol.ticker}?interval=${interval}&limit=1000`
@@ -159,13 +166,15 @@ interface ChartProps {
   interval?: string;
   width?: string;
   height?: string;
+  setSymbol?: (symbol: string) => void;
 }
 
 export default function CustomProChart({ 
   symbol = 'BTCUSDT', 
   interval = '1m',
   width = '100%',
-  height = '600px'
+  height = '600px',
+  setSymbol = () => {}
 }: ChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<KLineChartPro | null>(null);
@@ -211,7 +220,7 @@ export default function CustomProChart({
       }
 
       // Create new datafeed instance
-      datafeedRef.current = new BinanceDatafeed();
+      datafeedRef.current = new BinanceDatafeed(setSymbol);
       
       // Create new chart instance với period đúng format
       chartRef.current = new KLineChartPro({

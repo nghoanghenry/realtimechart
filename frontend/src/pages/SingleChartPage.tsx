@@ -7,7 +7,7 @@ import PredictionBlock from "../components/PredictionBlock"
 import { TrendingUp, BarChart3, Rows as News, Settings, ChevronRight } from "lucide-react"
 
 export default function SingleChartPage() {
-  const [selectedSymbol] = useState("BTCUSDT")
+  const [selectedSymbol, setSymbol] = useState("BTCUSDT")
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
   const handleIconClick = () => {
@@ -31,7 +31,7 @@ export default function SingleChartPage() {
               sidebarExpanded ? "w-[calc(100%-320px)]" : "w-[calc(100%-60px)]"
             } h-full`}
           >
-            <CustomProChart symbol={selectedSymbol} interval="1m" height="100%" />
+            <CustomProChart symbol={selectedSymbol} setSymbol={setSymbol} interval="1m" height="100%" />
           </div>
 
           {/* Expandable Content Panel - always both blocks, Prediction on top */}
@@ -43,7 +43,7 @@ export default function SingleChartPage() {
             {sidebarExpanded && (
               <div className="py-2 pl-2 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-800">Prediction & Sentiment News</h3>
+                  <h3 className="font-semibold text-gray-800">Prediction & Sentiment News {selectedSymbol}</h3>
                   <button
                     onClick={() => setSidebarExpanded(false)}
                     className="p-1 rounded hover:bg-gray-100"
@@ -52,7 +52,7 @@ export default function SingleChartPage() {
                   </button>
                 </div>
                 <div className="h-[calc(100%-50px)] overflow-y-auto flex flex-col gap-3">
-                  <PredictionBlock />
+                  <PredictionBlock symbol={selectedSymbol}/>
                   <SentimentNews />
                 </div>
               </div>
