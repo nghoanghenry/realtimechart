@@ -10,7 +10,7 @@ const VipUpgradePage: React.FC = () => {
     bankId: 'vietinbank',
     accountNo: '113366668888',
     template: 'compact2',
-    accountName: 'Crypto Trading Dashboard',
+    accountName: 'TradeX',
     monthlyAmount: 99000,
     yearlyAmount: 990000
   });
@@ -52,29 +52,29 @@ const VipUpgradePage: React.FC = () => {
       name: 'VIP Monthly',
       price: qrConfig.monthlyAmount.toLocaleString(),
       currency: 'VND',
-      duration: '1 tháng',
+      duration: '1 month',
       features: [
-        'Truy cập không giới hạn tất cả biểu đồ',
-        'Backtest với dữ liệu lịch sử đầy đủ',
-        'Alerts và thông báo real-time',
-        'Hỗ trợ kỹ thuật ưu tiên',
-        'Xuất báo cáo chi tiết',
-        'API access cho trading bot'
+        'Unlimited access to all charts',
+        'Backtest with full historical data',
+        'Real-time alerts and notifications',
+        'Priority technical support',
+        'Export detailed reports',
+        'API access for trading bot'
       ]
     },
     yearly: {
       name: 'VIP Yearly',
       price: qrConfig.yearlyAmount.toLocaleString(),
       currency: 'VND',
-      duration: '12 tháng',
-      discount: '2 tháng miễn phí!',
+      duration: '12 months',
+      discount: '2 months free!',
       features: [
-        'Tất cả tính năng VIP Monthly',
-        'Tiết kiệm 16% so với gói tháng',
-        'Phân tích nâng cao với AI',
-        'Tư vấn chiến lược đầu tư',
-        'Webinar độc quyền hàng tháng',
-        'Copy trading từ trader chuyên nghiệp'
+        'All VIP Monthly features',
+        'Save 16% compared to monthly plan',
+        'Advanced AI analysis',
+        'Investment strategy consultation',
+        'Exclusive monthly webinars',
+        'Copy trading from professional traders'
       ]
     }
   };
@@ -110,7 +110,7 @@ const VipUpgradePage: React.FC = () => {
       }
     } catch (error) {
       console.error('Payment generation error:', error);
-      alert('❌ Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
+      alert('❌ An error occurred while creating payment. Please try again.');
     }
   };
 
@@ -126,7 +126,7 @@ const VipUpgradePage: React.FC = () => {
 
   const handlePaymentComplete = async () => {
     if (!paymentId || !selectedPlan) {
-      alert('❌ Không tìm thấy thông tin thanh toán. Vui lòng thử lại.');
+      alert('❌ Payment information not found. Please try again.');
       return;
     }
 
@@ -151,18 +151,18 @@ const VipUpgradePage: React.FC = () => {
 
       if (response.ok) {
         await response.json(); // Consume response
-        alert('✅ Cảm ơn bạn đã xác nhận thanh toán!\n\nAdmin sẽ kiểm tra và duyệt thanh toán trong vòng 5-10 phút. Bạn sẽ nhận được thông báo khi tài khoản VIP được kích hoạt.');
+        alert('✅ Thank you for confirming your payment!\n\nAdmin will review and approve the payment within 5-10 minutes. You will receive a notification when your VIP account is activated.');
         
         setShowQRCode(false);
         setSelectedPlan(null);
         setPaymentId(null);
       } else {
         const errorData = await response.json();
-        alert(`❌ Lỗi: ${errorData.message || 'Có lỗi xảy ra khi xác nhận thanh toán'}`);
+        alert(`❌ Error: ${errorData.message || 'An error occurred while confirming payment'}`);
       }
     } catch (error) {
       console.error('Payment confirmation error:', error);
-      alert('❌ Có lỗi xảy ra khi xác nhận thanh toán. Vui lòng thử lại.');
+      alert('❌ An error occurred while confirming payment. Please try again.');
     }
   };
 
@@ -190,7 +190,7 @@ const VipUpgradePage: React.FC = () => {
             marginBottom: '20px',
             fontSize: '24px'
           }}>
-            🎉 Thanh toán gói {plans[selectedPlan].name}
+            🎉 Payment for {plans[selectedPlan].name}
           </h2>
 
           <div style={{
@@ -200,10 +200,10 @@ const VipUpgradePage: React.FC = () => {
             marginBottom: '20px'
           }}>
             <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
-              💰 Số tiền: {plans[selectedPlan].price} {plans[selectedPlan].currency}
+              💰 Amount: {plans[selectedPlan].price} {plans[selectedPlan].currency}
             </div>
             <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
-              📦 Gói: {plans[selectedPlan].name} ({plans[selectedPlan].duration})
+              📦 Plan: {plans[selectedPlan].name} ({plans[selectedPlan].duration})
             </div>
             <div style={{ fontSize: '14px', color: '#666', fontFamily: 'var(--font-family-primary)', backgroundColor: '#e9ecef', padding: '8px', borderRadius: '4px' }}>
               🆔 Payment ID: {paymentId}
@@ -243,13 +243,13 @@ const VipUpgradePage: React.FC = () => {
             color: '#1976d2'
           }}>
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-              📱 Hướng dẫn thanh toán:
+              📱 Payment instructions:
             </div>
             <div style={{ textAlign: 'left' }}>
-              1. Mở app Banking hoặc ví điện tử<br />
-              2. Quét mã QR code phía trên<br />
-              3. Kiểm tra thông tin và xác nhận thanh toán<br />
-              4. Chụp ảnh bill thanh toán để đối soát
+              1. Open Banking app or e-wallet<br />
+              2. Scan the QR code above<br />
+              3. Verify information and confirm payment<br />
+              4. Take a screenshot of the payment receipt for verification
             </div>
           </div>
 
@@ -261,7 +261,7 @@ const VipUpgradePage: React.FC = () => {
             fontSize: '13px',
             color: '#856404'
           }}>
-            ⚠️ Lưu ý: Tài khoản VIP sẽ được kích hoạt trong vòng 5-10 phút sau khi thanh toán thành công
+            ⚠️ Note: Your VIP account will be activated within 5-10 minutes after successful payment
           </div>
 
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
@@ -281,7 +281,7 @@ const VipUpgradePage: React.FC = () => {
               onMouseOver={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#218838'}
               onMouseOut={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#28a745'}
             >
-              ✅ Đã thanh toán
+              ✅ Payment completed
             </button>
 
             <button
@@ -304,7 +304,7 @@ const VipUpgradePage: React.FC = () => {
               onMouseOver={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#5a6268'}
               onMouseOut={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#6c757d'}
             >
-              🔙 Quay lại
+              🔙 Back
             </button>
           </div>
         </div>
@@ -324,9 +324,9 @@ const VipUpgradePage: React.FC = () => {
           color: 'white',
           marginBottom: '30px'
         }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🔧 Quản trị viên</h1>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🔧 Administrator</h1>
           <p style={{ fontSize: '1.2rem', opacity: 0.9 }}>
-            Bạn là admin, không cần nâng cấp VIP. Vui lòng sử dụng trang Admin Dashboard.
+            You are an admin, no need to upgrade to VIP. Please use the Admin Dashboard page.
           </p>
           <div style={{
             background: 'rgba(255,255,255,0.2)',
@@ -334,12 +334,12 @@ const VipUpgradePage: React.FC = () => {
             padding: '20px',
             marginTop: '20px'
           }}>
-            <h3>🛠️ Quyền admin của bạn:</h3>
+            <h3>🛠️ Your admin privileges:</h3>
             <ul style={{ listStyle: 'none', padding: 0, marginTop: '15px' }}>
-              <li>⚙️ Quản lý cấu hình QR thanh toán</li>
-              <li>✅ Duyệt/từ chối thanh toán VIP</li>
-              <li>📊 Xem thống kê hệ thống</li>
-              <li>👥 Quản lý người dùng</li>
+              <li>⚙️ Manage QR payment configuration</li>
+              <li>✅ Approve/reject VIP payments</li>
+              <li>📊 View system statistics</li>
+              <li>👥 Manage users</li>
             </ul>
           </div>
         </div>
@@ -364,7 +364,7 @@ const VipUpgradePage: React.FC = () => {
             WebkitTextFillColor: 'transparent',
             marginBottom: '16px'
           }}>
-            ⭐ Nâng cấp lên VIP
+            ⭐ Upgrade to VIP
           </h1>
           <p style={{
             fontSize: '18px',
@@ -372,7 +372,7 @@ const VipUpgradePage: React.FC = () => {
             maxWidth: '600px',
             margin: '0 auto'
           }}>
-            Mở khóa toàn bộ tính năng cao cấp và trở thành trader chuyên nghiệp
+            Unlock all premium features and become a professional trader
           </p>
         </div>
 
@@ -387,7 +387,7 @@ const VipUpgradePage: React.FC = () => {
             textAlign: 'center'
           }}>
             <div style={{ fontSize: '16px', color: '#666', marginBottom: '8px' }}>
-              Tài khoản hiện tại của {user.username}:
+              Current account of {user.username}:
             </div>
             <div style={{
               fontSize: '20px',
@@ -409,7 +409,7 @@ const VipUpgradePage: React.FC = () => {
                 borderRadius: '8px',
                 fontSize: '14px'
               }}>
-                🎉 Bạn đã là thành viên VIP! Tận hưởng tất cả tính năng premium.
+                🎉 You are already a VIP member! Enjoy all premium features.
               </div>
             )}
           </div>
@@ -433,7 +433,10 @@ const VipUpgradePage: React.FC = () => {
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
             border: user?.role === 'vip' ? '2px solid #cccccc' : '2px solid transparent',
             transition: 'all 0.3s ease',
-            position: 'relative'
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%'
           }}>
             <div style={{
               fontSize: '24px',
@@ -476,35 +479,37 @@ const VipUpgradePage: React.FC = () => {
               ))}
             </ul>
 
-            <button
-              onClick={() => (user?.role !== 'vip' && user?.role !== 'admin') ? handleUpgrade('monthly') : undefined}
-              disabled={user?.role === 'vip' || user?.role === 'admin'}
-              style={{
-                width: '100%',
-                padding: '14px',
-                backgroundColor: (user?.role === 'vip' || user?.role === 'admin') ? '#cccccc' : '#1890ff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: (user?.role === 'vip' || user?.role === 'admin') ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.3s',
-                opacity: (user?.role === 'vip' || user?.role === 'admin') ? 0.6 : 1
-              }}
-              onMouseOver={(e) => {
-                if (user?.role !== 'vip' && user?.role !== 'admin') {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#0c7cd5';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (user?.role !== 'vip' && user?.role !== 'admin') {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#1890ff';
-                }
-              }}
-            >
-              {user?.role === 'vip' ? '✅ Đã có VIP' : user?.role === 'admin' ? '🔧 Admin Account' : '🚀 Chọn gói tháng'}
-            </button>
+            <div style={{ marginTop: 'auto' }}>
+              <button
+                onClick={() => (user?.role !== 'vip' && user?.role !== 'admin') ? handleUpgrade('monthly') : undefined}
+                disabled={user?.role === 'vip' || user?.role === 'admin'}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: (user?.role === 'vip' || user?.role === 'admin') ? '#cccccc' : '#1890ff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: (user?.role === 'vip' || user?.role === 'admin') ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.3s',
+                  opacity: (user?.role === 'vip' || user?.role === 'admin') ? 0.6 : 1
+                }}
+                onMouseOver={(e) => {
+                  if (user?.role !== 'vip' && user?.role !== 'admin') {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#0c7cd5';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (user?.role !== 'vip' && user?.role !== 'admin') {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#1890ff';
+                  }
+                }}
+              >
+                {user?.role === 'vip' ? '✅ Already VIP' : user?.role === 'admin' ? '🔧 Admin Account' : '🚀 Select monthly plan'}
+              </button>
+            </div>
           </div>
 
           {/* Yearly Plan */}
@@ -515,7 +520,10 @@ const VipUpgradePage: React.FC = () => {
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
             border: user?.role === 'vip' ? '2px solid #cccccc' : '2px solid #28a745',
             transition: 'all 0.3s ease',
-            position: 'relative'
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%'
           }}>
             {/* Popular badge */}
             <div style={{
@@ -530,7 +538,7 @@ const VipUpgradePage: React.FC = () => {
               fontSize: '12px',
               fontWeight: 'bold'
             }}>
-              🔥 PHỔ BIẾN NHẤT
+              🔥 MOST POPULAR
             </div>
 
             <div style={{
@@ -587,35 +595,37 @@ const VipUpgradePage: React.FC = () => {
               ))}
             </ul>
 
-            <button
-              onClick={() => (user?.role !== 'vip' && user?.role !== 'admin') ? handleUpgrade('yearly') : undefined}
-              disabled={user?.role === 'vip' || user?.role === 'admin'}
-              style={{
-                width: '100%',
-                padding: '14px',
-                backgroundColor: (user?.role === 'vip' || user?.role === 'admin') ? '#cccccc' : '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: (user?.role === 'vip' || user?.role === 'admin') ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.3s',
-                opacity: (user?.role === 'vip' || user?.role === 'admin') ? 0.6 : 1
-              }}
-              onMouseOver={(e) => {
-                if (user?.role !== 'vip' && user?.role !== 'admin') {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#1e7e34';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (user?.role !== 'vip' && user?.role !== 'admin') {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#28a745';
-                }
-              }}
-            >
-              {user?.role === 'vip' ? '✅ Đã có VIP' : user?.role === 'admin' ? '🔧 Admin Account' : '💎 Chọn gói năm'}
-            </button>
+            <div style={{ marginTop: 'auto' }}>
+              <button
+                onClick={() => (user?.role !== 'vip' && user?.role !== 'admin') ? handleUpgrade('yearly') : undefined}
+                disabled={user?.role === 'vip' || user?.role === 'admin'}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: (user?.role === 'vip' || user?.role === 'admin') ? '#cccccc' : '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: (user?.role === 'vip' || user?.role === 'admin') ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.3s',
+                  opacity: (user?.role === 'vip' || user?.role === 'admin') ? 0.6 : 1
+                }}
+                onMouseOver={(e) => {
+                  if (user?.role !== 'vip' && user?.role !== 'admin') {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#1e7e34';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (user?.role !== 'vip' && user?.role !== 'admin') {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#28a745';
+                  }
+                }}
+              >
+                {user?.role === 'vip' ? '✅ Already VIP' : user?.role === 'admin' ? '🔧 Admin Account' : '💎 Select yearly plan'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -633,34 +643,34 @@ const VipUpgradePage: React.FC = () => {
             marginBottom: '20px',
             textAlign: 'center'
           }}>
-            ❓ Câu hỏi thường gặp
+            ❓ Frequently Asked Questions
           </h3>
 
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ borderBottom: '1px solid #e1e5e9', paddingBottom: '16px' }}>
               <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
-                💳 Thanh toán có an toàn không?
+                💳 Is payment secure?
               </div>
               <div style={{ color: '#666', fontSize: '14px' }}>
-                Chúng tôi sử dụng cổng thanh toán bảo mật hàng đầu với mã hóa SSL 256-bit. Thông tin thanh toán của bạn được bảo vệ tuyệt đối.
+                We use a leading secure payment gateway with 256-bit SSL encryption. Your payment information is fully protected.
               </div>
             </div>
 
             <div style={{ borderBottom: '1px solid #e1e5e9', paddingBottom: '16px' }}>
               <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
-                🔄 Có thể hủy subscription không?
+                🔄 Can I cancel my subscription?
               </div>
               <div style={{ color: '#666', fontSize: '14px' }}>
-                Bạn có thể hủy bất cứ lúc nào. Tài khoản VIP sẽ tiếp tục hoạt động đến hết chu kỳ thanh toán hiện tại.
+                You can cancel anytime. Your VIP account will remain active until the end of the current billing cycle.
               </div>
             </div>
 
             <div>
               <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
-                📞 Hỗ trợ khách hàng?
+                📞 Customer support?
               </div>
               <div style={{ color: '#666', fontSize: '14px' }}>
-                Thành viên VIP được ưu tiên hỗ trợ 24/7 qua email, chat và hotline. Thời gian phản hồi trung bình dưới 2 giờ.
+                VIP members receive priority 24/7 support via email, chat, and hotline. Average response time is under 2 hours.
               </div>
             </div>
           </div>

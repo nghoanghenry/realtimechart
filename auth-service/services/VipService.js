@@ -193,7 +193,7 @@ class VipService {
             bankId: 'vietinbank',
             accountNo: '113366668888',
             template: 'compact2',
-            accountName: 'Crypto Trading Dashboard',
+            accountName: 'TradeX',
             monthlyAmount: 99000,
             yearlyAmount: 990000
           },

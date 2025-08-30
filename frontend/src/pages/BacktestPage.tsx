@@ -5,10 +5,9 @@ export default function BacktestPage() {
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#f5f6fa',
-      padding: '20px'
+      padding: '44px'
     }}>
       <div style={{ 
-        maxWidth: '1400px', 
         margin: '0 auto'
       }}>
         <BacktestChart />

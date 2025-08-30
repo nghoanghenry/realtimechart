@@ -34,7 +34,7 @@ export default function AuthHeader() {
           fontSize: '24px',
           fontWeight: 600
         }}>
-          Crypto Trading Dashboard
+          TradeX
         </h1>
         
         {/* Auth Navigation */}
