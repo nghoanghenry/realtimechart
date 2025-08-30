@@ -446,6 +446,10 @@ export default function BacktestChart() {
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<StrategyTemplate | null>(null);
+  // Add color state for each MA/EMA period
+  const [maColors, setMaColors] = useState<{ [period: number]: string }>({ 20: '#ff6b35', 50: '#ffb835', 100: '#ff6b35' });
+  const [emaColors, setEmaColors] = useState<{ [period: number]: string }>({ 20: '#1890ff', 50: '#00bfff', 100: '#1890ff' });
+
   const [conditions, setConditions] = useState<StrategyCondition[]>([
     {
       id: '1',
@@ -890,12 +894,24 @@ export default function BacktestChart() {
     }
   };
 
-  // Evaluate strategy conditions
+  // Evaluate strategy conditions (dynamic indicators)
   const evaluateConditions = (
-    candle: KLineData, 
+    candle: KLineData,
     prevCandle: KLineData | null,
-    indicators: { [key: string]: number[] },
-    index: number
+    indicators: {
+      sma: { [period: number]: number[] },
+      ema: { [period: number]: number[] },
+      rsi: number[],
+      macd: number[],
+      macd_signal: number[],
+      bb_upper: number[],
+      bb_middle: number[],
+      bb_lower: number[],
+      momentum: number[],
+      price: number[]
+    },
+    index: number,
+    conditions: StrategyCondition[]
   ): { shouldBuy: boolean; shouldSell: boolean; reason: string } => {
     let shouldBuy = false;
     let shouldSell = false;
@@ -903,7 +919,7 @@ export default function BacktestChart() {
 
     for (const condition of conditions) {
       const { indicator1, comparison, indicator2, param1, param2 } = condition;
-      
+
       let value1 = 0;
       let value2 = 0;
       let prevValue1 = 0;
@@ -916,40 +932,40 @@ export default function BacktestChart() {
           prevValue1 = prevCandle?.close || candle.close;
           break;
         case 'SMA':
-          value1 = indicators.sma?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.sma?.[index - 1] || 0) : value1;
+          value1 = indicators.sma?.[param1]?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.sma?.[param1]?.[index - 1] ?? 0) : value1;
           break;
         case 'EMA':
-          value1 = indicators.ema?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.ema?.[index - 1] || 0) : value1;
+          value1 = indicators.ema?.[param1]?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.ema?.[param1]?.[index - 1] ?? 0) : value1;
           break;
         case 'RSI':
-          value1 = indicators.rsi?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.rsi?.[index - 1] || 0) : value1;
+          value1 = indicators.rsi?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.rsi?.[index - 1] ?? 0) : value1;
           break;
         case 'MACD':
-          value1 = indicators.macd?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.macd?.[index - 1] || 0) : value1;
+          value1 = indicators.macd?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.macd?.[index - 1] ?? 0) : value1;
           break;
         case 'MACD_Signal':
-          value1 = indicators.macd_signal?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.macd_signal?.[index - 1] || 0) : value1;
+          value1 = indicators.macd_signal?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.macd_signal?.[index - 1] ?? 0) : value1;
           break;
         case 'BB_Upper':
-          value1 = indicators.bb_upper?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.bb_upper?.[index - 1] || 0) : value1;
+          value1 = indicators.bb_upper?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.bb_upper?.[index - 1] ?? 0) : value1;
           break;
         case 'BB_Lower':
-          value1 = indicators.bb_lower?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.bb_lower?.[index - 1] || 0) : value1;
+          value1 = indicators.bb_lower?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.bb_lower?.[index - 1] ?? 0) : value1;
           break;
         case 'BB_Middle':
-          value1 = indicators.bb_middle?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.bb_middle?.[index - 1] || 0) : value1;
+          value1 = indicators.bb_middle?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.bb_middle?.[index - 1] ?? 0) : value1;
           break;
         case 'Momentum':
-          value1 = indicators.momentum?.[index] || 0;
-          prevValue1 = index > 0 ? (indicators.momentum?.[index - 1] || 0) : value1;
+          value1 = indicators.momentum?.[index] ?? 0;
+          prevValue1 = index > 0 ? (indicators.momentum?.[index - 1] ?? 0) : value1;
           break;
         default:
           value1 = 0;
@@ -963,36 +979,36 @@ export default function BacktestChart() {
           prevValue2 = prevCandle?.close || candle.close;
           break;
         case 'SMA':
-          value2 = indicators.sma2?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.sma2?.[index - 1] || 0) : value2;
+          value2 = indicators.sma?.[param2]?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.sma?.[param2]?.[index - 1] ?? 0) : value2;
           break;
         case 'EMA':
-          value2 = indicators.ema?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.ema?.[index - 1] || 0) : value2;
+          value2 = indicators.ema?.[param2]?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.ema?.[param2]?.[index - 1] ?? 0) : value2;
           break;
         case 'RSI':
-          value2 = indicators.rsi?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.rsi?.[index - 1] || 0) : value2;
+          value2 = indicators.rsi?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.rsi?.[index - 1] ?? 0) : value2;
           break;
         case 'MACD_Signal':
-          value2 = indicators.macd_signal?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.macd_signal?.[index - 1] || 0) : value2;
+          value2 = indicators.macd_signal?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.macd_signal?.[index - 1] ?? 0) : value2;
           break;
         case 'BB_Upper':
-          value2 = indicators.bb_upper?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.bb_upper?.[index - 1] || 0) : value2;
+          value2 = indicators.bb_upper?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.bb_upper?.[index - 1] ?? 0) : value2;
           break;
         case 'BB_Lower':
-          value2 = indicators.bb_lower?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.bb_lower?.[index - 1] || 0) : value2;
+          value2 = indicators.bb_lower?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.bb_lower?.[index - 1] ?? 0) : value2;
           break;
         case 'BB_Middle':
-          value2 = indicators.bb_middle?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.bb_middle?.[index - 1] || 0) : value2;
+          value2 = indicators.bb_middle?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.bb_middle?.[index - 1] ?? 0) : value2;
           break;
         case 'Momentum':
-          value2 = indicators.momentum?.[index] || 0;
-          prevValue2 = index > 0 ? (indicators.momentum?.[index - 1] || 0) : value2;
+          value2 = indicators.momentum?.[index] ?? 0;
+          prevValue2 = index > 0 ? (indicators.momentum?.[index - 1] ?? 0) : value2;
           break;
         case 'Value':
           value2 = param2;
@@ -1010,7 +1026,7 @@ export default function BacktestChart() {
 
       // Evaluate condition
       let conditionMet = false;
-      
+
       switch (comparison) {
         case 'Above':
           conditionMet = value1 > value2;
@@ -1058,7 +1074,8 @@ export default function BacktestChart() {
       await loadHistoricalData();
       // Chờ một chút để chart được khởi tạo
       setIsRunning(true);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      const waitMs = (historicalData.length > 0 ? historicalData.length : 500) * 12;
+      await new Promise(resolve => setTimeout(resolve, waitMs));
       setIsRunning(false);
     } catch (error) {
       console.error('Error loading data for backtest:', error);
@@ -1072,11 +1089,25 @@ export default function BacktestChart() {
     // Initialize subcharts first
     initializeSubcharts();
     
-    const ma20 = calculateMA(historicalData, config.ma20Period);
-    const ma100 = calculateMA(historicalData, config.ma100Period);
-    
-    // Calculate all indicators for strategy conditions
-    const ema21 = calculateEMA(historicalData, 21);
+    // 1. Tính toán tất cả các MA/EMA cần thiết dựa trên conditions
+    const maMap: { [period: number]: number[] } = {};
+    const emaMap: { [period: number]: number[] } = {};
+    conditions.forEach(cond => {
+      if (cond.indicator1 === 'SMA' && !maMap[cond.param1]) {
+        maMap[cond.param1] = calculateMA(historicalData, cond.param1);
+      }
+      if (cond.indicator2 === 'SMA' && !maMap[cond.param2]) {
+        maMap[cond.param2] = calculateMA(historicalData, cond.param2);
+      }
+      if (cond.indicator1 === 'EMA' && !emaMap[cond.param1]) {
+        emaMap[cond.param1] = calculateEMA(historicalData, cond.param1);
+      }
+      if (cond.indicator2 === 'EMA' && !emaMap[cond.param2]) {
+        emaMap[cond.param2] = calculateEMA(historicalData, cond.param2);
+      }
+    });
+
+    // Các indicator khác (vẫn giữ nguyên)
     const rsi = calculateRSI(historicalData, 14);
     const macd = calculateMACD(historicalData, 12, 26, 9);
     const bb = calculateBollingerBands(historicalData, 20, 2);
@@ -1085,20 +1116,51 @@ export default function BacktestChart() {
     // Update subcharts with indicator data
     updateSubcharts(macd, rsi);
 
-    const indicators: { [key: string]: number[] } = {
-      sma: ma20,    // Using ma20 as default SMA
-      sma2: ma100,  // Using ma100 as second SMA
-      ema: ema21,
-      rsi: rsi,
+    // 2. Vẽ overlay cho từng MA/EMA
+    if (chartRef.current) {
+      chartRef.current.removeOverlay();
+      Object.entries(maMap).forEach(([period, values]) => {
+        const color = maColors[Number(period)] || '#ff6b35';
+        const points = historicalData.map((candle, i) => ({
+          timestamp: candle.timestamp,
+          value: values[i]
+        })).filter(p => !isNaN(p.value));
+        chartRef.current.createOverlay({
+          name: 'maLine',
+          id: `ma${period}`,
+          points,
+          extendData: { color, lineWidth: 1 }
+        });
+      });
+      Object.entries(emaMap).forEach(([period, values]) => {
+        const color = emaColors[Number(period)] || '#1890ff';
+        const points = historicalData.map((candle, i) => ({
+          timestamp: candle.timestamp,
+          value: values[i]
+        })).filter(p => !isNaN(p.value));
+        chartRef.current.createOverlay({
+          name: 'maLine',
+          id: `ema${period}`,
+          points,
+          extendData: { color, lineWidth: 1 }
+        });
+      });
+    }
+
+    // 3. Tạo object indicators động cho evaluateConditions (explicit type)
+    const indicators = {
+      sma: maMap,
+      ema: emaMap,
+      rsi,
       macd: macd.macdLine,
       macd_signal: macd.signalLine,
       bb_upper: bb.upper,
       bb_middle: bb.middle,
       bb_lower: bb.lower,
-      momentum: momentum,
+      momentum,
       price: historicalData.map(d => d.close)
     };
-    
+
     const newTrades: Trade[] = [];
     let position: 'none' | 'long' = 'none';
     let entryPrice = 0;
@@ -1106,68 +1168,33 @@ export default function BacktestChart() {
     let quantity = 0;
     let tradeId = 0;
     
-    // Clear existing overlays
-    if (chartRef.current) {
-      chartRef.current.removeOverlay();
-    }
-    
-    // Add MA lines
-    const ma20Points = historicalData.map((candle, i) => ({
-      timestamp: candle.timestamp,
-      value: ma20[i]
-    })).filter(p => !isNaN(p.value));
-    
-    const ma100Points = historicalData.map((candle, i) => ({
-      timestamp: candle.timestamp,
-      value: ma100[i]
-    })).filter(p => !isNaN(p.value));
-    
-    if (chartRef.current) {
-      chartRef.current.createOverlay({
-        name: 'maLine',
-        id: 'ma20',
-        points: ma20Points,
-        extendData: { color: '#ff6b35', lineWidth: 2 }
-      });
-      
-      chartRef.current.createOverlay({
-        name: 'maLine',
-        id: 'ma100',
-        points: ma100Points,
-        extendData: { color: '#1890ff', lineWidth: 2 }
-      });
-    }
-    
-    // Backtest logic
-    for (let i = config.ma100Period; i < historicalData.length; i++) {
+    // Determine the largest period needed for any indicator in conditions
+    const allPeriods = conditions.flatMap(cond => [
+      cond.indicator1 === 'SMA' || cond.indicator1 === 'EMA' ? cond.param1 : 0,
+      cond.indicator2 === 'SMA' || cond.indicator2 === 'EMA' ? cond.param2 : 0
+    ]);
+    const maxPeriod = Math.max(...allPeriods.filter(p => p > 0), 1);
+
+    // Backtest logic (dynamic start index)
+    for (let i = maxPeriod; i < historicalData.length; i++) {
       const currentCandle = historicalData[i];
-      
-      // Get previous candle for condition evaluation
       const prevCandle = i > 0 ? historicalData[i - 1] : null;
-      
-      const currentMA20 = ma20[i];
-      const currentMA100 = ma100[i];
-      const prevMA20 = ma20[i - 1];
-      const prevMA100 = ma100[i - 1];
-      
-      if (isNaN(currentMA20) || isNaN(currentMA100) || isNaN(prevMA20) || isNaN(prevMA100)) {
-        continue;
-      }
 
       // Evaluate strategy conditions
       const { shouldBuy, shouldSell, reason } = evaluateConditions(
-        currentCandle, 
-        prevCandle, 
-        indicators, 
-        i
+        currentCandle,
+        prevCandle,
+        indicators,
+        i,
+        conditions
       );
-      
+
       // Buy signal from strategy conditions
       if (position === 'none' && shouldBuy) {
         entryPrice = currentCandle.close;
         quantity = capital / entryPrice;
         position = 'long';
-        
+
         const trade: Trade = {
           id: tradeId++,
           type: 'buy',
@@ -1176,9 +1203,9 @@ export default function BacktestChart() {
           quantity,
           reason: reason || 'Strategy condition met'
         };
-        
+
         newTrades.push(trade);
-        
+
         // Add buy arrow to chart
         if (chartRef.current) {
           chartRef.current.createOverlay({
@@ -1191,48 +1218,42 @@ export default function BacktestChart() {
           });
         }
       }
-      
+
       // Sell signals
       if (position === 'long') {
         let sellReason = '';
         let shouldSellPosition = false;
-        
+
         // Strategy sell signal
         if (shouldSell) {
           sellReason = reason || 'Strategy sell condition met';
           shouldSellPosition = true;
         }
-        
+
         // Stop loss
         const stopLossPrice = entryPrice * (1 - config.stopLoss / 100);
         if (currentCandle.low <= stopLossPrice) {
           sellReason = `Stop Loss (${config.stopLoss}%)`;
           shouldSellPosition = true;
         }
-        
+
         // Take profit
         const takeProfitPrice = entryPrice * (1 + config.takeProfit / 100);
         if (currentCandle.high >= takeProfitPrice) {
           sellReason = `Take Profit (${config.takeProfit}%)`;
           shouldSellPosition = true;
         }
-        
-        // MA signal exit: MA20 crosses below MA100
-        if (prevMA20 >= prevMA100 && currentMA20 < currentMA100) {
-          sellReason = 'MA20 cross below MA100';
-          shouldSellPosition = true;
-        }
-        
+
         if (shouldSellPosition) {
           const sellPrice = sellReason.includes('Stop Loss') ? stopLossPrice :
                            sellReason.includes('Take Profit') ? takeProfitPrice :
                            currentCandle.close;
-          
+
           const pnl = (sellPrice - entryPrice) * quantity;
           const pnlPercent = ((sellPrice - entryPrice) / entryPrice) * 100;
-          
+
           capital += pnl;
-          
+
           const trade: Trade = {
             id: tradeId++,
             type: 'sell',
@@ -1243,10 +1264,10 @@ export default function BacktestChart() {
             pnl,
             pnlPercent
           };
-          
+
           newTrades.push(trade);
           position = 'none';
-          
+
           // Add sell arrow to chart
           if (chartRef.current) {
             chartRef.current.createOverlay({
@@ -1669,9 +1690,26 @@ export default function BacktestChart() {
                         border: '1px solid #ddd',
                         borderRadius: '3px',
                         fontSize: '10px',
-                        width: '35px'
+                        width: '60px'
                       }}
                     />
+
+                    {/* MA/EMA color picker for param1 */}
+                    {(condition.indicator1 === 'SMA' || condition.indicator1 === 'EMA') && (
+                      <input
+                        type="color"
+                        value={condition.indicator1 === 'SMA' ? (maColors[condition.param1] || '#ff6b35') : (emaColors[condition.param1] || '#1890ff')}
+                        onChange={e => {
+                          if (condition.indicator1 === 'SMA') {
+                            setMaColors(prev => ({ ...prev, [condition.param1]: e.target.value }));
+                          } else {
+                            setEmaColors(prev => ({ ...prev, [condition.param1]: e.target.value }));
+                          }
+                        }}
+                        style={{ width: '22px', height: '22px', border: 'none', background: 'none', cursor: 'pointer' }}
+                        title={`Color for ${condition.indicator1}${condition.param1}`}
+                      />
+                    )}
 
                     <input
                       type="number"
@@ -1682,9 +1720,26 @@ export default function BacktestChart() {
                         border: '1px solid #ddd',
                         borderRadius: '3px',
                         fontSize: '10px',
-                        width: '35px'
+                        width: '60px'
                       }}
                     />
+
+                    {/* MA/EMA color picker for param2 */}
+                    {(condition.indicator2 === 'SMA' || condition.indicator2 === 'EMA') && (
+                      <input
+                        type="color"
+                        value={condition.indicator2 === 'SMA' ? (maColors[condition.param2] || '#ff6b35') : (emaColors[condition.param2] || '#1890ff')}
+                        onChange={e => {
+                          if (condition.indicator2 === 'SMA') {
+                            setMaColors(prev => ({ ...prev, [condition.param2]: e.target.value }));
+                          } else {
+                            setEmaColors(prev => ({ ...prev, [condition.param2]: e.target.value }));
+                          }
+                        }}
+                        style={{ width: '22px', height: '22px', border: 'none', background: 'none', cursor: 'pointer' }}
+                        title={`Color for ${condition.indicator2}${condition.param2}`}
+                      />
+                    )}
 
                     {conditions.length > 1 && (
                       <button
@@ -1820,14 +1875,29 @@ export default function BacktestChart() {
             justifyContent: 'center',
             flexWrap: 'wrap'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '20px', height: '2px', backgroundColor: '#ff6b35' }}></div>
-              <span>MA20</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '20px', height: '2px', backgroundColor: '#1890ff' }}></div>
-              <span>MA100</span>
-            </div>
+            {/* Only show MA/EMA periods used in current conditions */}
+            {Array.from(new Set(
+              conditions.flatMap(c => [c.indicator1 === 'SMA' ? c.param1 : null, c.indicator2 === 'SMA' ? c.param2 : null])
+            ))
+              .filter(period => period !== null)
+              .sort((a, b) => Number(a) - Number(b))
+              .map(period => (
+                <div key={`ma${period}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: maColors[Number(period)] || '#ff6b35' }}></div>
+                  <span>MA{period}</span>
+                </div>
+              ))}
+            {Array.from(new Set(
+              conditions.flatMap(c => [c.indicator1 === 'EMA' ? c.param1 : null, c.indicator2 === 'EMA' ? c.param2 : null])
+            ))
+              .filter(period => period !== null)
+              .sort((a, b) => Number(a) - Number(b))
+              .map(period => (
+                <div key={`ema${period}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '20px', height: '2px', backgroundColor: emaColors[Number(period)] || '#1890ff' }}></div>
+                  <span>EMA{period}</span>
+                </div>
+              ))}
             {usesMACD() && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
