@@ -7,10 +7,9 @@ export default function SingleChartPage() {
   const [selectedSymbol] = useState('BTCUSDT');
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', padding: '44px' }}>
       <div style={{ 
         borderRadius: '8px',
-        // padding: '24px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
       }}
       className='bg-white'

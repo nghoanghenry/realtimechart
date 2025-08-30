@@ -59,7 +59,7 @@ export default function PredictionBlock() {
       </div>
       <p className="text-gray-400 text-sm m-0">AI-Powered Forecast</p>
       <p className="w-full text-center text-gray-700 font-medium mt-2 text-lg">
-        Giá tiếp theo
+        Next price
       </p>
       {prediction !== null && (
         <div

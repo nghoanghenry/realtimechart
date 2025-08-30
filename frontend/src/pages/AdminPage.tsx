@@ -50,7 +50,7 @@ const AdminPage: React.FC = () => {
     bankId: 'vietinbank',
     accountNo: '113366668888',
     template: 'compact2',
-    accountName: 'Crypto Trading Dashboard',
+    accountName: 'TradeX',
     monthlyAmount: 99000,
     yearlyAmount: 990000
   });
@@ -126,7 +126,7 @@ const AdminPage: React.FC = () => {
         { id: 1, name: 'Vietinbank', code: 'ICB', bin: '970415', shortName: 'Vietinbank', logo: '', transferSupported: 1, lookupSupported: 1 },
         { id: 2, name: 'Vietcombank', code: 'VCB', bin: '970436', shortName: 'Vietcombank', logo: '', transferSupported: 1, lookupSupported: 1 },
         { id: 3, name: 'BIDV', code: 'BIDV', bin: '970418', shortName: 'BIDV', logo: '', transferSupported: 1, lookupSupported: 1 },
-        { id: 4, name: 'Agribank', code: 'VBA', bin: '970405', shortName: 'Agribank', logo: '', transferSupported: 1, lookupSupported: 1 },
+        { id: 4, name: 'Agribank', code: 'VBA', bin: '970405', shortName: 'Agribank', logo: 'https://api.vietqr.io/v2/logo/VBA.png', transferSupported: 1, lookupSupported: 1 },
         { id: 5, name: 'TPBank', code: 'TPB', bin: '970423', shortName: 'TPBank', logo: '', transferSupported: 1, lookupSupported: 1 },
         { id: 6, name: 'Sacombank', code: 'STB', bin: '970403', shortName: 'Sacombank', logo: '', transferSupported: 1, lookupSupported: 1 },
         { id: 7, name: 'MB Bank', code: 'MBB', bin: '970422', shortName: 'MB Bank', logo: '', transferSupported: 1, lookupSupported: 1 },
@@ -180,7 +180,7 @@ const AdminPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('QR Config saved successfully:', data);
-        alert('✅ Cấu hình QR đã được lưu thành công!');
+        alert('✅ QR configuration saved successfully!');
         // Reload the config to ensure we have the latest data
         await loadQRConfig();
       } else {
@@ -189,7 +189,7 @@ const AdminPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error saving QR config:', error);
-      alert(`❌ Có lỗi xảy ra khi lưu cấu hình QR: ${error.message}`);
+      alert(`❌ An error occurred while saving QR configuration: ${error.message}`);
     }
   };
 
@@ -205,14 +205,14 @@ const AdminPage: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('✅ Payment đã được duyệt và user đã được nâng cấp VIP!');
+        alert('✅ Payment approved and user upgraded to VIP!');
         loadPendingPayments(); // Reload list
       } else {
         throw new Error('Failed to approve payment');
       }
     } catch (error) {
       console.error('Error approving payment:', error);
-      alert('❌ Có lỗi xảy ra khi duyệt payment.');
+      alert('❌ An error occurred while approving payment.');
     }
   };
 
@@ -228,14 +228,14 @@ const AdminPage: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('❌ Payment đã bị từ chối.');
+        alert('❌ Payment rejected.');
         loadPendingPayments(); // Reload list
       } else {
         throw new Error('Failed to reject payment');
       }
     } catch (error) {
       console.error('Error rejecting payment:', error);
-      alert('❌ Có lỗi xảy ra khi từ chối payment.');
+      alert('❌ An error occurred while rejecting payment.');
     }
   };
 
@@ -274,7 +274,7 @@ const AdminPage: React.FC = () => {
             🛠️ Admin Dashboard
           </h1>
           <p style={{ margin: 0, color: '#666' }}>
-            Quản lý cấu hình QR code và duyệt payments VIP
+            Manage QR code configuration and approve VIP payments
           </p>
         </div>
 
@@ -303,7 +303,7 @@ const AdminPage: React.FC = () => {
                 transition: 'all 0.3s'
               }}
             >
-              🏦 Cấu hình QR Code
+              🏦 QR Code Configuration
             </button>
             <button
               onClick={() => setActiveTab('payments')}
@@ -319,7 +319,7 @@ const AdminPage: React.FC = () => {
                 transition: 'all 0.3s'
               }}
             >
-              💳 Duyệt Payments ({pendingPayments.length})
+              💳 Approve Payments ({pendingPayments.length})
             </button>
           </div>
 
@@ -327,7 +327,7 @@ const AdminPage: React.FC = () => {
           {activeTab === 'qr-config' && (
             <div style={{ padding: '30px' }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#333' }}>
-                Cấu hình VietQR
+                VietQR Configuration
               </h3>
 
               <div style={{
@@ -344,9 +344,10 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Ngân hàng
+                    Bank
                   </label>
                   <select
+                    className="roboto-bold"
                     value={qrConfig.bankId}
                     onChange={(e) => setQrConfig({...qrConfig, bankId: e.target.value})}
                     disabled={loadingBanks}
@@ -360,10 +361,10 @@ const AdminPage: React.FC = () => {
                     }}
                   >
                     {loadingBanks ? (
-                      <option>Đang tải danh sách ngân hàng...</option>
+                      <option>Loading bank list...</option>
                     ) : (
                       <>
-                        <option value="">Chọn ngân hàng</option>
+                        <option value="">Select bank</option>
                         {banks.map((bank) => (
                           <option key={bank.id} value={bank.shortName.toLowerCase()}>
                             {bank.name} ({bank.shortName})
@@ -382,7 +383,7 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Số tài khoản
+                    Account Number
                   </label>
                   <input
                     type="text"
@@ -395,7 +396,7 @@ const AdminPage: React.FC = () => {
                       borderRadius: '6px',
                       fontSize: '14px'
                     }}
-                    placeholder="Nhập số tài khoản"
+                    placeholder="Enter account number"
                   />
                 </div>
 
@@ -407,7 +408,7 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Template QR
+                    QR Template
                   </label>
                   <select
                     value={qrConfig.template}
@@ -420,10 +421,10 @@ const AdminPage: React.FC = () => {
                       fontSize: '14px'
                     }}
                   >
-                    <option value="compact2">Compact2 - Đầy đủ thông tin</option>
+                    <option value="compact2">Compact2 - Full information</option>
                     <option value="compact">Compact - QR + Logo</option>
-                    <option value="qr_only">QR Only - Chỉ mã QR</option>
-                    <option value="print">Print - In ấn chi tiết</option>
+                    <option value="qr_only">QR Only - QR code only</option>
+                    <option value="print">Print - Detailed printing</option>
                   </select>
                 </div>
 
@@ -435,7 +436,7 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Tên hiển thị
+                    Display Name
                   </label>
                   <input
                     type="text"
@@ -448,7 +449,7 @@ const AdminPage: React.FC = () => {
                       borderRadius: '6px',
                       fontSize: '14px'
                     }}
-                    placeholder="Tên người nhận"
+                    placeholder="Recipient name"
                   />
                 </div>
 
@@ -460,7 +461,7 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Gói tháng (VND)
+                    Monthly Plan (VND)
                   </label>
                   <input
                     type="number"
@@ -486,7 +487,7 @@ const AdminPage: React.FC = () => {
                     fontWeight: '500',
                     fontSize: '14px'
                   }}>
-                    Gói năm (VND)
+                    Yearly Plan (VND)
                   </label>
                   <input
                     type="number"
@@ -513,19 +514,19 @@ const AdminPage: React.FC = () => {
                 marginBottom: '16px'
               }}>
                 <h4 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>
-                  🔍 Preview QR Code
+                  🔍 QR Code Preview
                 </h4>
                 {qrConfig.bankId && qrConfig.accountNo ? (
                   <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <div style={{ textAlign: 'center' }}>
-                      <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>Gói tháng</p>
+                      <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>Monthly Plan</p>
                       <img 
                         src={generateQRUrl(qrConfig.monthlyAmount, 'monthly')}
                         alt="Monthly QR"
                         style={{ width: '180px', height: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).nextElementSibling!.textContent = 'Lỗi tải QR code';
+                          (e.target as HTMLImageElement).nextElementSibling!.textContent = 'Error loading QR code';
                         }}
                       />
                       <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#666' }}>
@@ -533,14 +534,14 @@ const AdminPage: React.FC = () => {
                       </p>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>Gói năm</p>
+                      <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>Yearly Plan</p>
                       <img 
                         src={generateQRUrl(qrConfig.yearlyAmount, 'yearly')}
                         alt="Yearly QR"
                         style={{ width: '180px', height: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).nextElementSibling!.textContent = 'Lỗi tải QR code';
+                          (e.target as HTMLImageElement).nextElementSibling!.textContent = 'Error loading QR code';
                         }}
                       />
                       <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#666' }}>
@@ -556,7 +557,7 @@ const AdminPage: React.FC = () => {
                     fontSize: '14px',
                     fontStyle: 'italic'
                   }}>
-                    Vui lòng chọn ngân hàng và nhập số tài khoản để xem preview QR code
+                    Please select a bank and enter an account number to view QR code preview
                   </div>
                 )}
               </div>
@@ -579,7 +580,7 @@ const AdminPage: React.FC = () => {
                 onMouseOver={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#218838'}
                 onMouseOut={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#28a745'}
               >
-                💾 Lưu cấu hình
+                💾 Save Configuration
               </button>
 
               {/* Bank info display */}
@@ -593,16 +594,16 @@ const AdminPage: React.FC = () => {
                   color: '#1976d2'
                 }}>
                   <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    ℹ️ Thông tin ngân hàng đã chọn:
+                    ℹ️ Selected Bank Information:
                   </div>
                   {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId) ? (
-                    <div>
-                      • Tên: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.name}<br/>
-                      • Mã BIN: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.bin}<br/>
-                      • Mã ngắn: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.shortName}
+                    <div className='roboto-semibold'>
+                      • Name: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.name}<br/>
+                      • BIN Code: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.bin}<br/>
+                      • Short Name: {banks.find(bank => bank.shortName.toLowerCase() === qrConfig.bankId)?.shortName}
                     </div>
                   ) : (
-                    <div>Ngân hàng: {qrConfig.bankId}</div>
+                    <div>Bank: {qrConfig.bankId}</div>
                   )}
                 </div>
               )}
@@ -619,7 +620,7 @@ const AdminPage: React.FC = () => {
                 marginBottom: '20px'
               }}>
                 <h3 style={{ margin: 0, color: '#333' }}>
-                  Payments chờ duyệt
+                  Pending Payments
                 </h3>
                 <button
                   onClick={loadPendingPayments}
@@ -638,11 +639,11 @@ const AdminPage: React.FC = () => {
 
               {isLoading ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                  Đang tải...
+                  Loading...
                 </div>
               ) : pendingPayments.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                  Không có payment nào chờ duyệt
+                  No pending payments
                 </div>
               ) : (
                 <div style={{ display: 'grid', gap: '16px' }}>
@@ -665,7 +666,7 @@ const AdminPage: React.FC = () => {
                             📧 {payment.userId.email}
                           </div>
                           <div style={{ fontSize: '14px', color: '#666' }}>
-                            🕒 {new Date(payment.createdAt).toLocaleString('vi-VN')}
+                            🕒 {new Date(payment.createdAt).toLocaleString('en-US')}
                           </div>
                         </div>
 
@@ -674,7 +675,7 @@ const AdminPage: React.FC = () => {
                             💰 {payment.amount.toLocaleString()} {payment.currency}
                           </div>
                           <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
-                            📦 Gói: {payment.metadata.plan === 'monthly' ? 'Tháng' : 'Năm'}
+                            📦 Plan: {payment.metadata.plan === 'monthly' ? 'Monthly' : 'Yearly'}
                           </div>
                           <div style={{ fontSize: '14px', color: '#666' }}>
                             📝 {payment.description}
@@ -695,7 +696,7 @@ const AdminPage: React.FC = () => {
                               fontWeight: '600'
                             }}
                           >
-                            ✅ Duyệt
+                            ✅ Approve
                           </button>
                           <button
                             onClick={() => handleRejectPayment(payment._id)}
@@ -710,7 +711,7 @@ const AdminPage: React.FC = () => {
                               fontWeight: '600'
                             }}
                           >
-                            ❌ Từ chối
+                            ❌ Reject
                           </button>
                         </div>
                       </div>

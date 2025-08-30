@@ -284,36 +284,49 @@ export default function MultiChart({ selectedSymbol = 'BTCUSDT' }: MultiChartPro
       </div>
       
       <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', 
-        gap: '2px'
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))',
+        gap: '2px',
+        alignItems: 'stretch'
       }}>
         {TIME_FRAMES.map((timeFrame, index) => (
           <div key={`${symbol}-${timeFrame.interval}-${index}`} style={{
-            border: '1px solid #e8e8e8', 
+            border: '1px solid #e8e8e8',
             borderRadius: '8px',
-            padding: '16px',
             backgroundColor: '#fff',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0
           }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            {/* Chart Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '16px'
+              padding: '16px 20px',
+              backgroundColor: '#fafafa',
+              borderBottom: '1px solid #e8e8e8',
+              minWidth: 0
             }}>
-              <h3 style={{ 
-                margin: 0, 
+              <h3 style={{
+                margin: 0,
                 color: '#1890ff',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                fontSize: '16px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                minWidth: 0,
+                flex: 1
               }}>
                 <span>{timeFrame.icon}</span>
-                {symbol} - {timeFrame.label}
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{symbol} - {timeFrame.label}</span>
               </h3>
-              
               <div style={{
                 padding: '6px 10px',
                 backgroundColor: getTimeframeBadgeColor(timeFrame.interval),
@@ -326,13 +339,15 @@ export default function MultiChart({ selectedSymbol = 'BTCUSDT' }: MultiChartPro
                 {timeFrame.interval.toUpperCase()}
               </div>
             </div>
-            
-            <CustomProChart 
-              key={`chart-${symbol}-${timeFrame.interval}`}
-              symbol={symbol} 
-              interval={timeFrame.interval}
-              height="400px"
-            />
+            {/* Chart Content */}
+            <div style={{ padding: '0px 20px 30px 20px' }}>
+              <CustomProChart
+                key={`chart-${symbol}-${timeFrame.interval}`}
+                symbol={symbol}
+                interval={timeFrame.interval}
+                height="400px"
+              />
+            </div>
           </div>
         ))}
       </div>

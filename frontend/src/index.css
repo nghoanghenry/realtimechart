@@ -1,6 +1,16 @@
 :root {
   /* Font family variable */
-  --font-family-primary: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+  --font-system: -apple-system, BlinkMacSystemFont;
+  --font-trebuchet: "Trebuchet MS";
+  --font-roboto: "Roboto";
+  --font-ubuntu: "Ubuntu";
+  --font-segoe: "Segoe UI";
+  --font-helvetica: "Helvetica Neue";
+  --font-arial: Arial;
+  --font-fallback: sans-serif;
+
+  --font-family-primary: var(--font-system), var(--font-trebuchet), var(--font-roboto), var(--font-ubuntu), var(--font-segoe), var(--font-helvetica), var(--font-arial), var(--font-fallback);
+
   font-family: var(--font-family-primary);
   background-color: #242424;
 
@@ -13,6 +23,16 @@
 /* Override all default fonts globally */
 *, *::before, *::after {
   font-family: var(--font-family-primary) !important;
+}
+
+.roboto-bold {
+  font-family: "Roboto", var(--font-family-primary); 
+  font-weight: 500;
+}
+
+.roboto-semibold {
+  font-family: "Roboto", var(--font-family-primary); 
+  font-weight: 400;
 }
 
 body {

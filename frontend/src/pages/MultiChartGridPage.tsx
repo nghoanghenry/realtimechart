@@ -45,7 +45,7 @@ export default function MultiChartGrid() {
       <div style={{ 
         maxWidth: '100%', 
         margin: '0 auto',
-        padding: '24px'
+        padding: '44px'
       }}>
         {/* Header Controls */}
         <div style={{
@@ -215,7 +215,7 @@ export default function MultiChartGrid() {
                 </div>
                 
                 {/* Chart Content */}
-                <div style={{ padding: '16px' }}>
+                <div style={{ padding: '0px 20px 30px 20px' }}>
                   <CustomProChart
                     symbol={symbolData.symbol}
                     interval="1m"

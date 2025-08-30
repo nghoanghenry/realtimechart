@@ -142,7 +142,7 @@ export default function Header() {
                   className="block w-full px-4 py-3 text-gray-800 text-sm font-medium border-none bg-transparent cursor-pointer transition-colors duration-200 text-left hover:bg-gray-50 active:bg-gray-100"
                   onClick={() => setIsDropdownOpen(false)}
                 >
-                  Tài khoản
+                  Profile
                 </Link>
                 <button 
                   onClick={handleLogout} 
