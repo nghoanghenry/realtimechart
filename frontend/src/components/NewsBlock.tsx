@@ -25,16 +25,18 @@ export default function NewsBlock({
       href={link}
       className="news-block rounded-lg p-2 border-gray-200 border-2 shadow-md hover:shadow-sm transition-shadow"
     >
-      <div className="flex flex-row-reverse w-full">
-        {parseFloat(sentiment) > 0 ? (
-          <TrendingUp color="green" size={18} />
-        ) : parseFloat(sentiment) < 0 ? (
-          <TrendingDown color="red" size={18} />
-        ) : (
-          <Minus color="gray" size={18} />
-        )}
+      <div className="flex items-start w-full mb-1">
+        <h3 className="font-medium line-clamp-2 text-ellipsis flex-1 pr-2">{title}</h3>
+        <span className="shrink-0 ml-2 mt-0.5">
+          {parseFloat(sentiment) > 0 ? (
+            <TrendingUp color="green" size={18} />
+          ) : parseFloat(sentiment) < 0 ? (
+            <TrendingDown color="red" size={18} />
+          ) : (
+            <Minus color="gray" size={18} />
+          )}
+        </span>
       </div>
-      <h3 className="font-medium line-clamp-2 text-ellipsis">{title}</h3>
 
       <p className="text-xs text-gray-500 line-clamp-3 text-ellipsis mt-1">
         {reason}
