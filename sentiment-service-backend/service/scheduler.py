@@ -18,7 +18,7 @@ class FetchScheduler:
         )
         self.analyzer = Analyzer()
         run_time = datetime.datetime.now() + datetime.timedelta(seconds=4)
-        self.scheduler.add_job(self._fetch_job, trigger="date", run_date=run_time)
+        # self.scheduler.add_job(self._fetch_job, trigger="date", run_date=run_time)
         self.scheduler.add_job(self._fetch_job, trigger="interval", seconds=3600)
 
     def _fetch_job(self) -> None:
