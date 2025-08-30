@@ -1057,7 +1057,9 @@ export default function BacktestChart() {
     try {
       await loadHistoricalData();
       // Chờ một chút để chart được khởi tạo
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsRunning(true);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      setIsRunning(false);
     } catch (error) {
       console.error('Error loading data for backtest:', error);
       return;
