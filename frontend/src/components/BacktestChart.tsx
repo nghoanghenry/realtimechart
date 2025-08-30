@@ -469,7 +469,7 @@ export default function BacktestChart() {
     
     // Time Range
     fromDate: '2023-01-29T12:00',
-    toDate: '2023-03-12T04:00',
+    toDate: '2025-03-12T04:00',
     
     // Strategy
     lots: 1000000,
@@ -729,6 +729,8 @@ export default function BacktestChart() {
       const startTime = new Date(config.fromDate).getTime();
       const endTime = new Date(config.toDate).getTime();
       
+  // ...existing code...
+
       const response = await fetch(
         `http://localhost/api/history/${config.symbol}?interval=${config.interval}&startTime=${startTime}&endTime=${endTime}&limit=500`
       );
@@ -1070,11 +1072,26 @@ export default function BacktestChart() {
 
   // Run backtest
   const runBacktest = async () => {
+    let aiPrediction: number[] = [];
     try {
       await loadHistoricalData();
+      // Gọi API AI prediction và lưu kết quả vào aiPrediction
+      const startTime = new Date(config.fromDate).getTime();
+      const endTime = new Date(config.toDate).getTime();
+      const aiUrl = `http://localhost:5001/predict/?symbol=${config.symbol}&interval=${config.interval}&startTime=${startTime}&endTime=${endTime}&limit=1000`;
+      try {
+        const aiRes = await fetch(aiUrl);
+        const aiData = await aiRes.json();
+        console.log('AI prediction result:', aiData);
+        if (aiData && Array.isArray(aiData.prediction)) {
+          aiPrediction = aiData.prediction;
+        }
+      } catch (err) {
+        console.error('Error fetching AI prediction:', err);
+      }
       // Chờ một chút để chart được khởi tạo
       setIsRunning(true);
-      const waitMs = (historicalData.length > 0 ? historicalData.length : 500) * 12;
+      const waitMs = (historicalData.length > 0 ? historicalData.length : 500) * 20;
       await new Promise(resolve => setTimeout(resolve, waitMs));
       setIsRunning(false);
     } catch (error) {
@@ -1145,6 +1162,27 @@ export default function BacktestChart() {
           extendData: { color, lineWidth: 1 }
         });
       });
+      // Vẽ AI prediction line đúng vị trí (offset theo seq_len)
+      if (aiPrediction && aiPrediction.length > 0) {
+        // Lấy seq_len từ env hoặc hardcode nếu cần
+        const seqLen = 50; // Sửa lại nếu cần lấy động từ API hoặc env
+        const points = aiPrediction.map((pred, i) => {
+          const dataIdx = i + seqLen;
+          if (dataIdx < historicalData.length) {
+            return {
+              timestamp: historicalData[dataIdx].timestamp,
+              value: pred
+            };
+          }
+          return null;
+        }).filter(p => p && !isNaN(p.value));
+        chartRef.current.createOverlay({
+          name: 'maLine',
+          id: 'aiPrediction',
+          points,
+          extendData: { color: '#8e24aa', lineWidth: 1, dash: [6, 4] }
+        });
+      }
     }
 
     // 3. Tạo object indicators động cho evaluateConditions (explicit type)
