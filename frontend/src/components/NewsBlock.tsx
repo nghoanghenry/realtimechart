@@ -24,6 +24,7 @@ export default function NewsBlock({
     <a
       href={link}
       className="news-block rounded-lg p-2 border-gray-200 border-2 shadow-md hover:shadow-sm transition-shadow"
+      target="_blank"
     >
       <div className="flex items-start w-full mb-1">
         <h3 className="font-medium line-clamp-2 text-ellipsis flex-1 pr-2">{title}</h3>

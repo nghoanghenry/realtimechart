@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import CustomProChart from '../components/CustomProChart';
+"use client"
+
+import { useState } from "react"
+import { BarChart3, Settings, Grid3X3, TrendingUp, Repeat } from "lucide-react"
+import CustomProChart from "../components/CustomProChart"
 
 const SYMBOLS = [
   { symbol: 'BTCUSDT', name: 'Bitcoin', category: 'Major' },
@@ -26,7 +29,7 @@ export default function MultiChartGrid() {
   const getGridCols = (count: number) => {
     if (count === 1) return 1;
     if (count <= 4) return 2;
-    if (count <= 6) return 3;
+    if (count <= 6) return 2;
     return 2;
   };
 
@@ -37,234 +40,107 @@ export default function MultiChartGrid() {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: '#f0f2f5', 
-      padding: '0' 
-    }}>
-      <div style={{ 
-        maxWidth: '100%', 
-        margin: '0 auto',
-        padding: '44px'
-      }}>
-        {/* Header Controls */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          padding: '24px',
-          marginBottom: '2px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <h2 style={{ 
-              margin: 0, 
-              color: '#262626',
-              fontSize: '24px',
-              fontWeight: 600
-            }}>
-              Multi Chart Dashboard
-            </h2>
-          </div>
-          
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '15px',
-            flexWrap: 'wrap'
-          }}>
-            <div>
-              <label style={{ 
-                fontSize: '13px', 
-                color: '#666', 
-                display: 'block', 
-                marginBottom: '6px',
-                fontWeight: 500
-              }}>
-                Number of Charts:
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="9"
-                value={chartCount}
-                onChange={(e) => setChartCount(parseInt(e.target.value) || 1)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #d9d9d9',
-                  borderRadius: '6px',
-                  width: '80px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  transition: 'border-color 0.3s ease'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#1890ff'}
-                onBlur={(e) => e.target.style.borderColor = '#d9d9d9'}
-              />
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <Grid3X3 className="h-8 w-8 text-black" />
+                <div>
+                  <h1 className="text-2xl font-bold text-black">Multi Chart Dashboard</h1>
+                  <p className="text-sm text-gray-600 mt-1">Monitor multiple cryptocurrency pairs simultaneously</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <BarChart3 className="h-4 w-4" />
+                  Currently showing: <span className="font-semibold text-black">{appliedChartCount}</span> chart(s)
+                </div>
+              </div>
             </div>
-            
-            <button
-              onClick={handleApplyChartCount}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#1890ff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 500,
-                marginTop: '20px',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#40a9ff'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#1890ff'}
-            >
-              Apply Changes
-            </button>
-            
-            <div style={{ 
-              marginLeft: '20px',
-              color: '#666',
-              fontSize: '13px',
-              marginTop: '20px'
-            }}>
-              Currently showing: <strong style={{ color: '#1890ff' }}>{appliedChartCount}</strong> chart(s)
+            {/* Header Controls */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-gray-600" />
+                <label className="text-sm font-medium text-gray-700">Number of Charts:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="9"
+                  value={chartCount}
+                  onChange={(e) => setChartCount(Number.parseInt(e.target.value) || 1)}
+                  className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                />
+              </div>
+              <button
+                onClick={handleApplyChartCount}
+                className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
+                Apply Changes
+              </button>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mx-auto mt-1">
 
         {/* Charts Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${getGridCols(appliedChartCount)}, 1fr)`,
-          gap: '2px',
-          gridAutoRows: 'auto'
-        }}>
+        <div
+          className="grid gap-1 mb-6"
+          style={{
+            gridTemplateColumns: `repeat(${getGridCols(appliedChartCount)}, 1fr)`,
+          }}
+        >
           {Array.from({ length: appliedChartCount }, (_, index) => {
             const symbolData = SYMBOLS[index % SYMBOLS.length];
             return (
-              <div
-                key={index}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  overflow: 'hidden',
-                  border: '1px solid #e8e8e8'
-                }}
-              >
+              <div key={index} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 {/* Chart Header */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 20px',
-                  backgroundColor: '#fafafa',
-                  borderBottom: '1px solid #e8e8e8'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{
-                      margin: 0,
-                      color: '#262626',
-                      fontSize: '16px',
-                      fontWeight: 600
-                    }}>
-                      {symbolData.symbol}
-                    </h3>
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#8c8c8c',
-                      marginTop: '2px'
-                    }}>
+                <div className="flex justify-between items-center p-5 bg-gray-50 border-b border-gray-200">
+                  <div className="flex flex-col">
+                    <h3 className="text-lg font-semibold text-black">{symbolData.symbol}</h3>
+                    <div className="text-xs text-gray-500 mt-1">
                       {symbolData.name} • {symbolData.category}
                     </div>
                   </div>
-                  
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <div style={{
-                      padding: '4px 8px',
-                      backgroundColor: '#f0f2f5',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      color: '#666',
-                      fontWeight: 500,
-                      textTransform: 'uppercase'
-                    }}>
-                      1m
-                    </div>
-                    <div style={{
-                      padding: '4px 8px',
-                      backgroundColor: '#e6f7ff',
-                      color: '#1890ff',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 600
-                    }}>
-                      Chart {index + 1}
-                    </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">1M</div>
+                    <div className="px-2 py-1 bg-black text-white rounded text-xs font-semibold">Chart {index + 1}</div>
                   </div>
                 </div>
                 
                 {/* Chart Content */}
-                <div style={{ padding: '0px 20px 30px 20px' }}>
-                  <CustomProChart
-                    symbol={symbolData.symbol}
-                    interval="1m"
-                    height={getChartHeight(appliedChartCount)}
-                  />
+                <div className="p-5">
+                  <CustomProChart symbol={symbolData.symbol} interval="1m" height={getChartHeight(appliedChartCount)} />
                 </div>
               </div>
             );
           })}
         </div>
 
+        {/* Shared realtime indicator */}
+        <div className="my-6 rounded-lg flex items-center justify-center gap-2">
+          <Repeat className="h-4 w-4" />
+          <span className="text-sm font-medium">
+            All charts sharing realtime data from single WebSocket connection
+          </span>
+        </div>
+
         {/* Info Footer */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          padding: '20px',
-          marginTop: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }}>
-            <span style={{ fontSize: '18px' }}>📊</span>
-            <h4 style={{
-              margin: 0,
-              color: '#262626',
-              fontSize: '16px',
-              fontWeight: 600
-            }}>
-              Multi Chart Features
-            </h4>
+        <div className="bg-black text-white p-6 text-center">
+          <div className="flex justify-center items-center gap-2 mb-3">
+            <TrendingUp className="h-5 w-5" />
+            <h4 className="text-lg font-semibold">Multi Chart Features</h4>
           </div>
-          <p style={{
-            margin: '0 auto',
-            color: '#666',
-            fontSize: '14px',
-            lineHeight: '1.6',
-            maxWidth: '600px'
-          }}>
-            Monitor multiple cryptocurrency pairs simultaneously with real-time price data. 
-            Customize the number of charts (1-9) with automatic layout optimization and responsive design.
+          <p className="text-gray-300 text-sm leading-relaxed max-w-2xl mx-auto">
+            Monitor multiple cryptocurrency pairs simultaneously with real-time price data. Customize the number of
+            charts (1-9) with automatic layout optimization and responsive design.
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

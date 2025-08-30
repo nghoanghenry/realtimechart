@@ -1,12 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import CustomProChart from './CustomProChart';
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { TrendingUp, Calendar, CalendarDays, Zap, Search, BarChart3, Repeat } from "lucide-react"
+import CustomProChart from "./CustomProChart"
 
 const TIME_FRAMES = [
-  { interval: '5m', label: '5 Minutes', icon: '⚡' },
-  { interval: '4h', label: '4 Hours', icon: '📈' },
-  { interval: '1d', label: 'Daily', icon: '📅' },
-  { interval: '1w', label: 'Weekly', icon: '🗓️' }
-];
+  { interval: "5m", label: "5 Minutes", icon: Zap },
+  { interval: "4h", label: "4 Hours", icon: TrendingUp },
+  { interval: "1d", label: "Daily", icon: Calendar },
+  { interval: "1w", label: "Weekly", icon: CalendarDays },
+]
 
 interface SymbolOption {
   symbol: string;
@@ -140,96 +145,49 @@ function SymbolAutocomplete({
   };
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-        onKeyDown={handleKeyDown}
-        placeholder="Search symbols..."
-        style={{
-          padding: '8px 12px',
-          border: isOpen ? '2px solid #1890ff' : '1px solid #d9d9d9',
-          borderRadius: '6px',
-          fontSize: '14px',
-          width: '200px',
-          textTransform: 'uppercase',
-          outline: 'none',
-          transition: 'border-color 0.2s ease'
-        }}
-      />
-      
+    <div ref={dropdownRef} className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          onKeyDown={handleKeyDown}
+          placeholder="Search symbols..."
+          className={`pl-10 pr-4 py-2 border-2 rounded-lg text-sm w-56 uppercase outline-none transition-all duration-200 ${
+            isOpen ? "border-black shadow-lg" : "border-gray-200 hover:border-gray-300"
+          }`}
+        />
+      </div>
+
       {isOpen && filteredOptions.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          backgroundColor: 'white',
-          border: '1px solid #d9d9d9',
-          borderRadius: '6px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          zIndex: 1000,
-          maxHeight: '300px',
-          overflowY: 'auto',
-          marginTop: '2px'
-        }}>
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto mt-1">
           {filteredOptions.map((option, index) => (
             <div
               key={option.symbol}
               onClick={() => handleSelectOption(option)}
-              style={{
-                padding: '10px 12px',
-                cursor: 'pointer',
-                backgroundColor: index === highlightedIndex ? '#f0f8ff' : 'white',
-                borderBottom: index < filteredOptions.length - 1 ? '1px solid #f0f0f0' : 'none',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                transition: 'background-color 0.1s ease'
-              }}
+              className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 flex justify-between items-center transition-colors ${
+                index === highlightedIndex ? "bg-gray-50" : "hover:bg-gray-50"
+              }`}
               onMouseEnter={() => setHighlightedIndex(index)}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ 
-                  fontWeight: 600, 
-                  fontSize: '14px',
-                  color: '#262626'
-                }}>
-                  {option.symbol}
-                </div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  color: '#666',
-                  marginTop: '2px'
-                }}>
-                  {option.name}
-                </div>
+              <div className="flex flex-col flex-1">
+                <div className="font-semibold text-sm text-black">{option.symbol}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{option.name}</div>
               </div>
-              <div style={{
-                padding: '2px 6px',
-                backgroundColor: getCategoryColor(option.category),
-                color: 'white',
-                borderRadius: '3px',
-                fontSize: '10px',
-                fontWeight: 600
-              }}>
+              <div
+                className="px-2 py-1 rounded text-white text-xs font-semibold"
+                style={{ backgroundColor: getCategoryColor(option.category) }}
+              >
                 {option.category}
               </div>
             </div>
           ))}
-          
-          {value.length > 0 && !filteredOptions.some(opt => opt.symbol === value) && (
-            <div style={{
-              padding: '10px 12px',
-              borderTop: '1px solid #f0f0f0',
-              backgroundColor: '#f9f9f9',
-              fontSize: '12px',
-              color: '#666',
-              textAlign: 'center'
-            }}>
+
+          {value.length > 0 && !filteredOptions.some((opt) => opt.symbol === value) && (
+            <div className="p-3 border-t border-gray-200 bg-gray-50 text-xs text-gray-600 text-center">
               Press Enter to use "{value}"
             </div>
           )}
@@ -248,253 +206,150 @@ export default function MultiChart({ selectedSymbol = 'BTCUSDT' }: MultiChartPro
   }, [selectedSymbol]);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '30px'
-      }}>
-        <h1 style={{ margin: 0, color: '#262626' }}>
-          Multi-Timeframe Analysis: {symbol}
-        </h1>
-        
-        {/* Symbol autocomplete để có thể thay đổi coin */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontWeight: 500, color: '#666' }}>Symbol:</label>
-          <SymbolAutocomplete
-            value={symbol}
-            onChange={setSymbol}
-          />
-        </div>
-      </div>
-      
-      {/* Shared realtime indicator */}
-      <div style={{
-        marginBottom: '20px',
-        padding: '12px 16px',
-        backgroundColor: '#e6f7ff',
-        borderRadius: '6px',
-        border: '1px solid #91d5ff',
-        textAlign: 'center'
-      }}>
-        <span style={{ color: '#0050b3', fontSize: '14px', fontWeight: 500 }}>
-          🔄 All charts sharing realtime data from single WebSocket connection for {symbol}
-        </span>
-      </div>
-      
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))',
-        gap: '2px',
-        alignItems: 'stretch'
-      }}>
-        {TIME_FRAMES.map((timeFrame, index) => (
-          <div key={`${symbol}-${timeFrame.interval}-${index}`} style={{
-            border: '1px solid #e8e8e8',
-            borderRadius: '8px',
-            backgroundColor: '#fff',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: 0
-          }}>
-            {/* Chart Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '16px 20px',
-              backgroundColor: '#fafafa',
-              borderBottom: '1px solid #e8e8e8',
-              minWidth: 0
-            }}>
-              <h3 style={{
-                margin: 0,
-                color: '#1890ff',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '16px',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                minWidth: 0,
-                flex: 1
-              }}>
-                <span>{timeFrame.icon}</span>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{symbol} - {timeFrame.label}</span>
-              </h3>
-              <div style={{
-                padding: '6px 10px',
-                backgroundColor: getTimeframeBadgeColor(timeFrame.interval),
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: 700,
-                color: 'white',
-                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-              }}>
-                {timeFrame.interval.toUpperCase()}
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-8 w-8 text-black" />
+                <div>
+                  <h1 className="text-2xl font-bold text-black">Multi-Timeframe Analysis</h1>
+                  <p className="text-sm text-gray-600 mt-1">Analyzing {symbol} across multiple timeframes</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-gray-700">Symbol:</label>
+                <SymbolAutocomplete value={symbol} onChange={setSymbol} />
               </div>
             </div>
-            {/* Chart Content */}
-            <div style={{ padding: '0px 20px 30px 20px' }}>
-              <CustomProChart
-                key={`chart-${symbol}-${timeFrame.interval}`}
-                symbol={symbol}
-                interval={timeFrame.interval}
-                height="400px"
-              />
+            {/* Popular symbols quick access */}
+            <div className="bg-white rounded-lg flex">
+              <h4 className="flex items-center gap-2 text-base font-semibold text-black mr-2">
+                Popular Symbols:
+              </h4>
+              <div className="flex gap-2 flex-wrap">
+                {POPULAR_SYMBOLS.slice(0, 8).map((option) => (
+                  <button
+                    key={option.symbol}
+                    onClick={() => setSymbol(option.symbol)}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      symbol === option.symbol ? "bg-black text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {option.symbol.replace("USDT", "")}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-      
-      {/* Timeframe explanation */}
-      <div style={{
-        marginTop: '30px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '16px'
-      }}>
-        <div style={{
-          padding: '16px',
-          backgroundColor: '#e6f7ff',
-          borderRadius: '8px',
-          border: '1px solid #91d5ff'
-        }}>
-          <h4 style={{ margin: '0 0 8px 0', color: '#0050b3', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            ⚡ 5 Minutes - Scalping
-          </h4>
-          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-            Quick trades, high frequency, short-term momentum
-          </p>
-        </div>
-        
-        <div style={{
-          padding: '16px',
-          backgroundColor: '#f6ffed',
-          borderRadius: '8px',
-          border: '1px solid #b7eb8f'
-        }}>
-          <h4 style={{ margin: '0 0 8px 0', color: '#389e0d', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            📈 4 Hours - Swing Trading
-          </h4>
-          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-            Medium-term trends, swing positions, technical analysis
-          </p>
-        </div>
-        
-        <div style={{
-          padding: '16px',
-          backgroundColor: '#fff7e6',
-          borderRadius: '8px',
-          border: '1px solid #ffd591'
-        }}>
-          <h4 style={{ margin: '0 0 8px 0', color: '#d48806', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            📅 Daily - Position Trading
-          </h4>
-          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-            Major trends, position trades, fundamental analysis
-          </p>
-        </div>
-        
-        <div style={{
-          padding: '16px',
-          backgroundColor: '#f9f0ff',
-          borderRadius: '8px',
-          border: '1px solid #d3adf7'
-        }}>
-          <h4 style={{ margin: '0 0 8px 0', color: '#722ed1', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🗓️ Weekly - Investment
-          </h4>
-          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-            Long-term trends, macro analysis, investment decisions
-          </p>
         </div>
       </div>
-      
-      {/* Popular symbols quick access */}
-      <div style={{
-        marginTop: '20px',
-        padding: '16px',
-        backgroundColor: '#fafafa',
-        borderRadius: '8px',
-        border: '1px solid #e8e8e8'
-      }}>
-        <h4 style={{ margin: '0 0 12px 0', color: '#262626', fontSize: '14px' }}>
-          🚀 Quick Access - Popular Symbols:
-        </h4>
-        <div style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          flexWrap: 'wrap' 
-        }}>
-          {POPULAR_SYMBOLS.slice(0, 8).map((option) => (
-            <button
-              key={option.symbol}
-              onClick={() => setSymbol(option.symbol)}
-              style={{
-                padding: '6px 12px',
-                border: symbol === option.symbol ? '2px solid #1890ff' : '1px solid #d9d9d9',
-                borderRadius: '4px',
-                backgroundColor: symbol === option.symbol ? '#e6f7ff' : 'white',
-                color: symbol === option.symbol ? '#1890ff' : '#666',
-                fontSize: '12px',
-                fontWeight: symbol === option.symbol ? 600 : 400,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (symbol !== option.symbol) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (symbol !== option.symbol) {
-                  e.currentTarget.style.backgroundColor = 'white';
-                }
-              }}
-            >
-              {option.symbol.replace('USDT', '')}
-            </button>
-          ))}
+
+      <div className="mx-auto">
+        <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-1">
+          {TIME_FRAMES.map((timeFrame, index) => {
+            const IconComponent = timeFrame.icon
+            return (
+              <div
+                key={`${symbol}-${timeFrame.interval}-${index}`}
+                className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+              >
+                {/* Chart Header */}
+                <div className="flex justify-between items-center p-5 bg-gray-50 border-b border-gray-200">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-black">
+                    <IconComponent className="h-5 w-5" />
+                    <span className="truncate">
+                      {symbol} - {timeFrame.label}
+                    </span>
+                  </h3>
+                  <div
+                    className="px-3 py-1 rounded-md text-xs font-bold text-white"
+                    style={{ backgroundColor: getTimeframeBadgeColor(timeFrame.interval) }}
+                  >
+                    {timeFrame.interval.toUpperCase()}
+                  </div>
+                </div>
+                {/* Chart Content */}
+                <div className="p-5">
+                  <CustomProChart
+                    key={`chart-${symbol}-${timeFrame.interval}`}
+                    symbol={symbol}
+                    interval={timeFrame.interval}
+                    height="400px"
+                  />
+                </div>
+              </div>
+            )
+          })}
         </div>
-      </div>
-      
-      {/* Info footer */}
-      <div style={{
-        marginTop: '30px',
-        padding: '20px',
-        backgroundColor: '#f6f8fa',
-        borderRadius: '8px',
-        textAlign: 'center',
-        color: '#666',
-        fontSize: '14px'
-      }}>
-        <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>
-          📊 Analyzing <strong style={{ color: '#1890ff' }}>{symbol}</strong> across multiple timeframes
-        </p>
-        <p style={{ margin: 0, fontSize: '12px', opacity: 0.8 }}>
-          5m for scalping • 4h for swing trading • Daily for position trades • Weekly for long-term investment
-        </p>
-        <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#999' }}>
-          🔄 Single WebSocket connection shared across all charts for optimal performance
-        </p>
+
+        {/* Timeframe explanation */}
+        {/* <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="p-4 bg-white border border-gray-200 rounded-lg">
+            <h4 className="flex items-center gap-2 font-semibold text-black mb-2">
+              <Zap className="h-4 w-4" />5 Minutes - Scalping
+            </h4>
+            <p className="text-sm text-gray-600">Quick trades, high frequency, short-term momentum</p>
+          </div>
+
+          <div className="p-4 bg-white border border-gray-200 rounded-lg">
+            <h4 className="flex items-center gap-2 font-semibold text-black mb-2">
+              <TrendingUp className="h-4 w-4" />4 Hours - Swing Trading
+            </h4>
+            <p className="text-sm text-gray-600">Medium-term trends, swing positions, technical analysis</p>
+          </div>
+
+          <div className="p-4 bg-white border border-gray-200 rounded-lg">
+            <h4 className="flex items-center gap-2 font-semibold text-black mb-2">
+              <Calendar className="h-4 w-4" />
+              Daily - Position Trading
+            </h4>
+            <p className="text-sm text-gray-600">Major trends, position trades, fundamental analysis</p>
+          </div>
+
+          <div className="p-4 bg-white border border-gray-200 rounded-lg">
+            <h4 className="flex items-center gap-2 font-semibold text-black mb-2">
+              <CalendarDays className="h-4 w-4" />
+              Weekly - Investment
+            </h4>
+            <p className="text-sm text-gray-600">Long-term trends, macro analysis, investment decisions</p>
+          </div>
+        </div> */}
+
+        {/* Shared realtime indicator */}
+        <div className="my-6 rounded-lg flex items-center justify-center gap-2">
+          <Repeat className="h-4 w-4" />
+          <span className="text-sm font-medium">
+            All charts sharing realtime data from single WebSocket connection for {symbol}
+          </span>
+        </div>
+
+        {/* Info footer */}
+        <div className="mt-6 p-5 bg-black text-white text-center">
+          <p className="font-semibold mb-2">
+            Analyzing <span className="text-yellow-400">{symbol}</span> across multiple timeframes
+          </p>
+          <p className="text-sm text-gray-300 mb-2">
+            5m for scalping • 4h for swing trading • Daily for position trades • Weekly for long-term investment
+          </p>
+          <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+            <Repeat className="h-3 w-3" />
+            Single WebSocket connection shared across all charts for optimal performance
+          </p>
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
 // Helper function để lấy màu badge theo timeframe
 function getTimeframeBadgeColor(interval: string): string {
   const colors: Record<string, string> = {
-    '5m': '#52c41a',   // Green - Fast/Scalping
-    '4h': '#1890ff',   // Blue - Medium/Swing
-    '1d': '#fa8c16',   // Orange - Daily/Position
-    '1w': '#722ed1'    // Purple - Weekly/Investment
-  };
-  return colors[interval] || '#666';
+    "5m": "#16a34a", // Green - Fast/Scalping
+    "4h": "#000000", // Black - Medium/Swing
+    "1d": "#ea580c", // Orange - Daily/Position
+    "1w": "#7c3aed", // Purple - Weekly/Investment
+  }
+  return colors[interval] || "#374151"
 }
