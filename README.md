@@ -78,6 +78,9 @@ Phần 5: Hoàng + Nhi
 - **User authentication**: Đăng ký, đăng nhập
 - **Role-based access**: Phân quyền người dùng
 
+### Mail
+- Bad event notification: all subscribers (Design pattern: Observer, Pub/Sub, Event Bus)
+
 ## Công nghệ Sử dụng / Technology Stack
 
 ### Frontend
